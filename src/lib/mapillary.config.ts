@@ -2,8 +2,7 @@
 // Client ID: 25246864601630618
 // Authentication URL: https://www.mapillary.com/connect?client_id=25246864601630618
 
-// Client-side token (safe to expose via NEXT_PUBLIC_ prefix)
-export const MAPILLARY_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPILLARY_TOKEN || ""
+// Token will be fetched via server action instead
 
 // Server-side only configuration
 export const MAPILLARY_CLIENT_SECRET = process.env.MAPILLARY_CLIENT_SECRET || ""

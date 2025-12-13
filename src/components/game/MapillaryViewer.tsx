@@ -1,14 +1,20 @@
 "use client"
 import { Viewer } from "mapillary-js"
-import { useEffect, useRef } from "react"
-import { MAPILLARY_ACCESS_TOKEN } from "@/lib/mapillary.config"
+import { useEffect, useRef, useState } from "react"
+import { getMapillaryToken } from "@/lib/actions/mapillary"
 
 export default function MapillaryViewer({ imageId, allowMove = true }: { imageId: string; allowMove?: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
+  const [token, setToken] = useState<string>("")
+
   useEffect(() => {
-    if (!ref.current || !imageId) return
+    getMapillaryToken().then(setToken).catch(console.error)
+  }, [])
+
+  useEffect(() => {
+    if (!ref.current || !imageId || !token) return
     const v = new Viewer({
-      accessToken: MAPILLARY_ACCESS_TOKEN,
+      accessToken: token,
       container: ref.current,
       imageId,
       component: { cover: false },
@@ -34,6 +40,7 @@ export default function MapillaryViewer({ imageId, allowMove = true }: { imageId
       }
     }
     return () => v.remove()
-  }, [imageId, allowMove])
+  }, [imageId, allowMove, token])
+
   return <div ref={ref} style={{ width: "100%", height: "100%" }} />
 }

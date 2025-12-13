@@ -25,9 +25,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "lat/lon required" }, { status: 400 })
     }
 
-    const token = process.env.MAPILLARY_SERVER_TOKEN || process.env.NEXT_PUBLIC_MAPILLARY_TOKEN
+    const token = process.env.MAPILLARY_SERVER_TOKEN
     if (!token) {
-      console.log("[v0] Missing Mapillary token")
+      console.log("[v0] Missing Mapillary server token")
       return NextResponse.json({ error: "Missing Mapillary token" }, { status: 500 })
     }
 

@@ -1,14 +1,142 @@
-@import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+@import "tailwindcss";
+@import "tw-animate-css";
+@import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
 
 /* Global base */
-html, body, #__next { 
-  height: 100%; 
+html,
+body,
+#__next {
+  height: 100%;
   width: 100%;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
 }
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 /* Ensure body is the positioning context */
 body {
@@ -30,72 +158,133 @@ html[data-theme="matrix"] {
   --ring: #00ff41;
   --error: #ff3d3d;
   --warning: #ccff00;
-  --shadow: 0 0 24px rgba(0,255,65,0.25);
+  --shadow: 0 0 24px rgba(0, 255, 65, 0.25);
 }
 
 /* Base body styles */
-html[data-theme="matrix"] body { 
-  color: var(--text); 
+html[data-theme="matrix"] body {
+  color: var(--text);
   background: transparent; /* Let MatrixRain canvas show through! */
 }
 
 /* Selection */
 html[data-theme="matrix"] ::selection {
-  background: rgba(0,255,65,0.25);
+  background: rgba(0, 255, 65, 0.25);
   color: var(--accent);
 }
 
 /* Scrollbar (webkit) */
-html[data-theme="matrix"] ::-webkit-scrollbar { width: 10px; height: 10px; }
+html[data-theme="matrix"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
 html[data-theme="matrix"] ::-webkit-scrollbar-thumb {
-  background: rgba(0,255,65,0.35);
+  background: rgba(0, 255, 65, 0.35);
   border-radius: 8px;
 }
-html[data-theme="matrix"] ::-webkit-scrollbar-track { background: transparent; }
+html[data-theme="matrix"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
 
 /* Simple utilities for Matrix look (can be used in components) */
-.mx-panel { background: rgba(11, 15, 11, 0.75); border: 1px solid rgba(0,255,65,0.18); box-shadow: var(--shadow); backdrop-filter: blur(8px); }
-.mx-text { color: var(--text); }
-.mx-accent { color: var(--accent); }
-.mx-border { border-color: rgba(0,255,65,0.18); }
-.mx-ring:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--ring); }
+.mx-panel {
+  background: rgba(11, 15, 11, 0.75);
+  border: 1px solid rgba(0, 255, 65, 0.18);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+}
+.mx-text {
+  color: var(--text);
+}
+.mx-accent {
+  color: var(--accent);
+}
+.mx-border {
+  border-color: rgba(0, 255, 65, 0.18);
+}
+.mx-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring);
+}
 
 /* Glitch and CRT aesthetics */
 @keyframes mx-glitch-shift {
-  0% { transform: translate(0); }
-  20% { transform: translate(-1px, 1px); }
-  40% { transform: translate(1px, -1px); }
-  60% { transform: translate(-1px, -1px); }
-  80% { transform: translate(1px, 1px); }
-  100% { transform: translate(0); }
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-1px, 1px);
+  }
+  40% {
+    transform: translate(1px, -1px);
+  }
+  60% {
+    transform: translate(-1px, -1px);
+  }
+  80% {
+    transform: translate(1px, 1px);
+  }
+  100% {
+    transform: translate(0);
+  }
 }
-.mx-glitch { position: relative; }
-.mx-glitch::before, .mx-glitch::after {
+.mx-glitch {
+  position: relative;
+}
+.mx-glitch::before,
+.mx-glitch::after {
   content: attr(data-text);
   position: absolute;
-  left: 0; top: 0; opacity: .4; pointer-events: none;
+  left: 0;
+  top: 0;
+  opacity: 0.4;
+  pointer-events: none;
 }
-.mx-glitch::before { color: #0ff; transform: translate(1px, 0); mix-blend-mode: screen; }
-.mx-glitch::after { color: #f0f; transform: translate(-1px, 0); mix-blend-mode: screen; }
+.mx-glitch::before {
+  color: #0ff;
+  transform: translate(1px, 0);
+  mix-blend-mode: screen;
+}
+.mx-glitch::after {
+  color: #f0f;
+  transform: translate(-1px, 0);
+  mix-blend-mode: screen;
+}
 
 .mx-crt::after {
   content: "";
-  position: absolute; inset: 0; pointer-events: none;
-  background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 2px, rgba(0,255,65,0.06) 2px 3px);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0 2px, rgba(0, 255, 65, 0.06) 2px 3px);
 }
 
 /* Leaflet neon markers */
 .mx-marker {
-  width: 14px; height: 14px; border-radius: 9999px;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
   border: 2px solid var(--accent);
-  background: rgba(0,255,65,0.2);
-  box-shadow: 0 0 8px rgba(0,255,65,0.9), 0 0 18px rgba(0,255,65,0.6);
+  background: rgba(0, 255, 65, 0.2);
+  box-shadow: 0 0 8px rgba(0, 255, 65, 0.9), 0 0 18px rgba(0, 255, 65, 0.6);
 }
-.mx-marker.guess { border-color: #00d0ff; background: rgba(0,208,255,0.15); box-shadow: 0 0 8px rgba(0,208,255,0.9), 0 0 18px rgba(0,208,255,0.6); }
+.mx-marker.guess {
+  border-color: #00d0ff;
+  background: rgba(0, 208, 255, 0.15);
+  box-shadow: 0 0 8px rgba(0, 208, 255, 0.9), 0 0 18px rgba(0, 208, 255, 0.6);
+}
 
 /* Progress bar */
-.mx-progress { background: rgba(0,255,65,0.12); border: 1px solid rgba(0,255,65,0.25); }
-.mx-progress > .bar { background: var(--accent); box-shadow: 0 0 12px rgba(0,255,65,0.8); }
+.mx-progress {
+  background: rgba(0, 255, 65, 0.12);
+  border: 1px solid rgba(0, 255, 65, 0.25);
+}
+.mx-progress > .bar {
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(0, 255, 65, 0.8);
+}
 
 /* Leaflet polylines glow */
-.mx-polyline { filter: drop-shadow(0 0 6px rgba(0,255,65,.8)); }
+.mx-polyline {
+  filter: drop-shadow(0 0 6px rgba(0, 255, 65, 0.8));
+}
