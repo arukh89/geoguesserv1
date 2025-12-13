@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 
@@ -23,13 +23,22 @@ export function useFarcasterUser() {
 
         const { sdk } = await import("@farcaster/miniapp-sdk")
 
-        // Initialize SDK
         await sdk.actions.ready()
 
-        // Get user from SDK context
-        const context = sdk.context
-        if (context?.user) {
-          setUser(context.user)
+        let u: any = null
+        if (typeof sdk.actions.getUser === 'function') {
+          try { u = await (sdk.actions as any).getUser() } catch {}
+        }
+        if (!u && sdk.context?.user) u = sdk.context.user
+
+        if (u?.fid != null) {
+          const fidNum = Number(u.fid)
+          setUser({
+            fid: isNaN(fidNum) ? (u.fid as number) : fidNum,
+            username: u.username,
+            displayName: u.displayName,
+            pfpUrl: u.pfpUrl,
+          })
         }
       } catch (error) {
         console.log("Not in Farcaster miniapp context:", error)

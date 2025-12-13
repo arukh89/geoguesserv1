@@ -20,13 +20,13 @@ export const metadata: Metadata = {
     description: "Explore the world. Test your geography skills. Share your scores.",
     url: "/",
     siteName: "Farcaster Geo Explorer",
-    images: ["/thumbnail.png"],
+    images: ["/splash.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "Farcaster Geo Explorer",
     description: "Explore the world. Test your geography skills. Share your scores.",
-    images: ["/thumbnail.png"],
+    images: ["/splash.png"],
   },
     icons: {
     icon: "/icon.png",
