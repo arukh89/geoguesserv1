@@ -1,10 +1,11 @@
-"use client"
+﻿"use client"
 
 import { Button } from "@/components/ui/button"
 import { Trophy, Shield, HomeIcon, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
 import { isAdmin } from "@/lib/admin/config"
+import LoginButton from "@/components/auth/LoginButton"
 
 export function GlobalHeader() {
   const router = useRouter()
@@ -57,6 +58,8 @@ export function GlobalHeader() {
               Admin
             </Button>
           )}
+
+          <LoginButton />
         </div>
       </div>
     </header>
