@@ -19,12 +19,6 @@ export const metadata: Metadata = {
     siteName: "Farcaster Geo Explorer",
     images: ["/heroImageUrl.png"],
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Farcaster Geo Explorer",
-    description: "Explore the world. Test your geography skills. Share your scores.",
-    images: ["/heroImageUrl.png"],
-  },
   icons: {
     icon: "/icon.png",
     apple: "/splash.png",
@@ -49,3 +43,4 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   )
 }
+
