@@ -20,17 +20,17 @@ export const metadata: Metadata = {
     description: "Explore the world. Test your geography skills. Share your scores.",
     url: "/",
     siteName: "Farcaster Geo Explorer",
-    images: ["/splash.png"],
+    images: ["https://v0-geoguesser-7k.vercel.app/heroImageUrl.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "Farcaster Geo Explorer",
     description: "Explore the world. Test your geography skills. Share your scores.",
-    images: ["/splash.png"],
+    images: ["https://v0-geoguesser-7k.vercel.app/heroImageUrl.png"],
   },
-  icons: {
-    icon: "/icon.png",
-    apple: "/splash.png",
+    icons: {
+    icon: "https://v0-geoguesser-7k.vercel.app/icon.png",
+    apple: "https://v0-geoguesser-7k.vercel.app/splash.png",
   },
   other: {
     "base:app_id": "693d9f2bd77c069a945bde7d",

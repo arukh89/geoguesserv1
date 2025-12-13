@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect, useCallback } from "react"
 import { Card } from "@/components/ui/card"
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createBrowserClient } from "@/lib/supabase/client"
-import { useSendTransaction, useAccount } from "wagmi"
+import { useSendTransaction, useAccount, useWalletClient } from "wagmi"
 import { parseEther, encodeFunctionData } from "viem"
 import { toast } from "sonner"
 import { Loader2, Send } from "lucide-react"
@@ -44,19 +44,15 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
   const [amounts, setAmounts] = useState<Record<string, string>>({})
   const [sending, setSending] = useState<Record<string, boolean>>({})
 
-  const { address, isConnected } = useAccount()
-  const { sendTransaction, isPending } = useSendTransaction()
+  const { isConnected } = useAccount()
+  const { data: walletClient } = useWalletClient()
+  const { sendTransaction } = useSendTransaction()
   const supabase = createBrowserClient()
-
-  useEffect(() => {
-    loadWeeklyLeaderboard()
-  }, [loadWeeklyLeaderboard])
 
   const loadWeeklyLeaderboard = useCallback(async () => {
     try {
       setLoading(true)
 
-      // Get current week boundaries
       const now = new Date()
       const weekStart = new Date(now)
       weekStart.setDate(now.getDate() - now.getDay())
@@ -66,7 +62,6 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
       weekEnd.setDate(weekStart.getDate() + 6)
       weekEnd.setHours(23, 59, 59, 999)
 
-      // Query scores for current week, top 10
       const { data, error } = await supabase
         .from("scores")
         .select("*")
@@ -88,7 +83,6 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
 
       setLeaderboard(entries)
 
-      // Initialize suggested amounts
       const suggestedAmounts: Record<string, string> = {}
       entries.forEach((entry) => {
         const rank = entry.weekly_rank
@@ -104,7 +98,11 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
     } finally {
       setLoading(false)
     }
-    }, [supabase])
+  }, [supabase])
+
+  useEffect(() => {
+    loadWeeklyLeaderboard()
+  }, [loadWeeklyLeaderboard])
 
   async function handleSendTokens(entry: LeaderboardEntry) {
     if (!isConnected) {
@@ -118,7 +116,6 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
       return
     }
 
-    // Validate wallet address format
     const walletAddress = entry.identity
     if (!walletAddress || !/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
       toast.error("Invalid wallet address")
@@ -128,25 +125,30 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
     try {
       setSending((prev) => ({ ...prev, [entry.id]: true }))
 
-      const contractAddress =
-        process.env.NEXT_PUBLIC_MOONSHOT_CONTRACT_ADDRESS || "0x9d7ff2e9ba89502776248acd6cbcb6734049fb07"
+      const contractAddress = (process.env.NEXT_PUBLIC_MOONSHOT_CONTRACT_ADDRESS as `0x${string}`) ||
+        "0x9d7ff2e9ba89502776248acd6cbcb6734049fb07"
 
-      // Encode transfer function call
       const data = encodeFunctionData({
         abi: MOONSHOT_ABI,
         functionName: "transfer",
         args: [walletAddress as `0x${string}`, parseEther(amount)],
       })
 
-      // Send transaction
-      sendTransaction(
-        {
-          to: contractAddress as `0x${string}`,
-          data,
-        },
-        {
-          onSuccess: async (hash) => {
-            // Record in database
+      // Try ERC-5792 wallet_sendCalls with Base Builder Code attribution (Base)
+      try {
+        if (walletClient) {
+          let ds: string | undefined
+          try {
+            const mod: any = await import("ox/erc8021")
+            if (mod?.Attribution?.toDataSuffix) ds = mod.Attribution.toDataSuffix({ codes: ["bc_rtgh1kp5"] })
+          } catch {}
+
+          const params: any = { calls: [{ to: contractAddress, data }], chainId: "eip155:8453" }
+          if (ds) params.capabilities = { dataSuffix: ds }
+
+          const res: any = await (walletClient as any).request({ method: "wallet_sendCalls", params: [params] })
+          const hash: string | undefined = res?.hash ?? (Array.isArray(res) ? res[0]?.hash : undefined)
+          if (hash) {
             await supabase.from("admin_rewards").insert({
               admin_fid: adminFid,
               admin_wallet: adminWallet,
@@ -157,7 +159,30 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
               week_end: entry.week_end,
               tx_hash: hash,
             })
+            toast.success(`Successfully sent ${amount} MOONSHOT to ${walletAddress}`)
+            setSending((prev) => ({ ...prev, [entry.id]: false }))
+            return
+          }
+        }
+      } catch (e) {
+        console.warn("wallet_sendCalls failed, falling back", e)
+      }
 
+      // Fallback to legacy sendTransaction
+      sendTransaction(
+        { to: contractAddress, data },
+        {
+          onSuccess: async (hash) => {
+            await supabase.from("admin_rewards").insert({
+              admin_fid: adminFid,
+              admin_wallet: adminWallet,
+              recipient_wallet: walletAddress,
+              recipient_name: entry.identity,
+              amount: Number.parseFloat(amount),
+              week_start: entry.week_start,
+              week_end: entry.week_end,
+              tx_hash: hash,
+            })
             toast.success(`Successfully sent ${amount} MOONSHOT to ${walletAddress}`)
             setSending((prev) => ({ ...prev, [entry.id]: false }))
           },
@@ -190,9 +215,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
           <h2 className="text-2xl font-bold text-[var(--text)]">Admin Panel</h2>
           <p className="text-sm text-[var(--text-secondary)] mt-1">Send MOONSHOT tokens to top 10 weekly winners</p>
         </div>
-        <Button onClick={loadWeeklyLeaderboard} variant="secondary" size="sm">
-          Refresh
-        </Button>
+        <Button onClick={loadWeeklyLeaderboard} variant="secondary" size="sm">Refresh</Button>
       </div>
 
       <div className="grid gap-4">
@@ -210,25 +233,10 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
 
               <div className="flex items-center gap-2">
                 <div className="w-32">
-                  <Label htmlFor={`amount-${entry.id}`} className="sr-only">
-                    Amount
-                  </Label>
-                  <Input
-                    id={`amount-${entry.id}`}
-                    type="number"
-                    value={amounts[entry.id] || ""}
-                    onChange={(e) => setAmounts((prev) => ({ ...prev, [entry.id]: e.target.value }))}
-                    placeholder="Amount"
-                    disabled={sending[entry.id]}
-                    className="text-right"
-                  />
+                  <Label htmlFor={`amount-${entry.id}`} className="sr-only">Amount</Label>
+                  <Input id={`amount-${entry.id}`} type="number" value={amounts[entry.id] || ""} onChange={(e) => setAmounts((prev) => ({ ...prev, [entry.id]: e.target.value }))} placeholder="Amount" disabled={sending[entry.id]} className="text-right" />
                 </div>
-                <Button
-                  onClick={() => handleSendTokens(entry)}
-                  disabled={sending[entry.id] || !amounts[entry.id]}
-                  size="sm"
-                  className="gap-2"
-                >
+                <Button onClick={() => handleSendTokens(entry)} disabled={sending[entry.id] || !amounts[entry.id]} size="sm" className="gap-2">
                   {sending[entry.id] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   Send
                 </Button>
