@@ -28,9 +28,12 @@ export const metadata: Metadata = {
     description: "Explore the world. Test your geography skills. Share your scores.",
     images: ["/splash.png"],
   },
-    icons: {
+  icons: {
     icon: "/icon.png",
     apple: "/splash.png",
+  },
+  other: {
+    "base:app_id": "693d9f2bd77c069a945bde7d",
   },
 }
 
