@@ -9,7 +9,7 @@
                     "name":  "Farcaster Geo Explorer",
                     "iconUrl":  "https://v0-geoguesser-7k.vercel.app/icon.png",
                     "homeUrl":  "https://v0-geoguesser-7k.vercel.app/",
-                    "buttonTitle": "Open Deaf Helper",
+                    "buttonTitle": "Open Farcaster Geo Explorer",
                     "splashImageUrl":  "https://v0-geoguesser-7k.vercel.app/splash.png",
                     "splashBackgroundColor":  "#001a0f",
                     "subtitle":  "Test your geography skills",
