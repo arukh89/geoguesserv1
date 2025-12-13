@@ -1,7 +1,7 @@
 {
     "accountAssociation":  {
-                               "header":  "eyJmaWQiOjEyMzQsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIn0",
-                               "payload":  "eyJkb21haW4iOiJ2MC1nZW9ndWVzc2VyLTdrLnZlcmNlbC5hcHAifQ",
+                               "header":  "",
+                               "payload":  "",
                                "signature":  ""
                            },
     "miniapp":  {
