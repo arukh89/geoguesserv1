@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button"
 import { Trophy, Shield, HomeIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
-import { isAdmin } from "@/lib/admin/config"
+import { isAdmin, isAdminWallet } from "@/lib/admin/config"
 import LoginButton from "@/components/auth/LoginButton"
+import { useAccount } from "wagmi"
 
 export function GlobalHeader() {
   const router = useRouter()
   const { user } = useFarcasterUser()
-  const isAdminUser = user?.fid ? isAdmin(user.fid) : false
+  const { address, isConnected } = useAccount()
+  const isAdminUser = (user?.fid ? isAdmin(user.fid) : false) || (isConnected && address ? isAdminWallet(address) : false)
 
   return (
     <header className="h-14 w-full fixed top-0 left-0 right-0 z-[9999] bg-black/90 backdrop-blur-lg border-b-2 border-green-500/50 shadow-lg shadow-green-500/20">
