@@ -1,14 +1,14 @@
-"use client"
+﻿"use client"
 
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
-import { isAdmin } from "@/lib/admin/config"
+import { isAdmin, getAdminByFid } from "@/lib/admin/config"
 import { AdminPanel } from "@/components/admin/AdminPanel"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function AdminPage() {
-  const { fid, isLoading } = useFarcasterUser()
+  const { user, loading } = useFarcasterUser()
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-green-400 text-xl">Loading...</div>
@@ -16,7 +16,7 @@ export default function AdminPage() {
     )
   }
 
-  if (!fid || !isAdmin(fid)) {
+  if (!user || !isAdmin(user.fid)) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
         <Card className="max-w-md bg-black/90 border-2 border-red-500/50">
@@ -37,7 +37,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-black p-4">
       <div className="max-w-4xl mx-auto">
-        <AdminPanel />
+        {(() => { const admin = getAdminByFid(user!.fid)!; return <AdminPanel adminFid={admin.fid} adminWallet={admin.wallet} /> })()}
       </div>
     </div>
   )
