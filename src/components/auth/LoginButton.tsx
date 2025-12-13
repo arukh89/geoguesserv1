@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useAccount, useConnect, useDisconnect, useSignMessage } from "wagmi"
 
 function short(addr?: string) {
-  return addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : ""
+  return addr ? `${addr.slice(0, 6)}.${addr.slice(-4)}` : ""
 }
 
 export default function LoginButton() {
@@ -40,6 +40,8 @@ export default function LoginButton() {
     await trySign()
   }
 
+  const btnClass = "flex items-center gap-2 px-4 py-2 rounded-lg bg-black/80 backdrop-blur-lg border-2 border-green-500/50 hover:bg-green-900/20 hover:border-green-400 transition-colors shadow-lg shadow-green-500/20 text-green-300 font-semibold hover:text-green-200"
+
   if (isConnected) {
     return (
       <div className="flex items-center gap-2">
@@ -52,11 +54,11 @@ export default function LoginButton() {
   return (
     <div className="flex items-center gap-2">
       {preferred.far && (
-        <Button size="md" onClick={async () => { try { await connectAsync({ connector: preferred.far! }) } catch {}; await trySign() }}>
+        <Button size="md" className={btnClass} onClick={async () => { try { await connectAsync({ connector: preferred.far! }) } catch {}; await trySign() }}>
           Login (Farcaster)
         </Button>
       )}
-      <Button size="md" onClick={async () => { const c = preferred.inj || connectors.find(x=>/injected/i.test(x.id)); if (c) { try { await connectAsync({ connector: c }) } catch { try { await (window as any)?.ethereum?.request?.({ method: "eth_requestAccounts" }) } catch {} } await trySign() } }} disabled={isPending}>
+      <Button size="md" className={btnClass} onClick={async () => { const c = preferred.inj || connectors.find(x=>/injected/i.test(x.id)); if (c) { try { await connectAsync({ connector: c }) } catch { try { await (window as any)?.ethereum?.request?.({ method: "eth_requestAccounts" }) } catch {} } await trySign() } }} disabled={isPending}>
         Login (Wallet)
       </Button>
     </div>
