@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect, useCallback } from "react"
 import { Card } from "@/components/ui/card"
@@ -137,14 +137,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
       // Try ERC-5792 wallet_sendCalls with Base Builder Code attribution (Base)
       try {
         if (walletClient) {
-          let ds: string | undefined
-          try {
-            const mod: any = await import("ox/erc8021")
-            if (mod?.Attribution?.toDataSuffix) ds = mod.Attribution.toDataSuffix({ codes: ["bc_rtgh1kp5"] })
-          } catch {}
-
           const params: any = { calls: [{ to: contractAddress, data }], chainId: "eip155:8453" }
-          if (ds) params.capabilities = { dataSuffix: ds }
 
           const res: any = await (walletClient as any).request({ method: "wallet_sendCalls", params: [params] })
           const hash: string | undefined = res?.hash ?? (Array.isArray(res) ? res[0]?.hash : undefined)
@@ -254,3 +247,4 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
     </div>
   )
 }
+
