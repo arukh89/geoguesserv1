@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import HomeScreen from "./HomeScreen"
 import ResultsScreen from "./ResultsScreen"
 import FinalResults from "./FinalResults"
@@ -20,15 +20,47 @@ export function GamePage() {
   const [results, setResults] = useState<RoundResult[]>([])
   const [gameMode, setGameMode] = useState<GameMode>("classic")
   const [timeLimit, setTimeLimit] = useState<number | undefined>()
+  const [timeLeft, setTimeLeft] = useState<number | undefined>(undefined)
   const [showMap, setShowMap] = useState(false)
-
-  const startGame = (mode: GameMode, durationSec?: number) => {
+  // Countdown timer per round
+  useEffect(() => {
+    if (gameState !== "playing" || typeof timeLimit !== "number") return;
+    const id = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (typeof prev !== "number") return prev;
+        const next = prev > 0 ? prev - 1 : 0;
+        if (next <= 0) {
+          clearInterval(id);
+          const location = locations[currentRound];
+          if (location) {
+            const guessLat = -location.lat;
+            const guessLng = location.lng >= 0 ? location.lng - 180 : location.lng + 180;
+            const distance = calculateDistance(location.lat, location.lng, guessLat, guessLng);
+            const roundResult: RoundResult = {
+              location,
+              guess: { lat: guessLat, lng: guessLng },
+              distance,
+              score: 0,
+              round: currentRound + 1,
+            };
+            setResults((prev) => [...prev, roundResult]);
+            setShowMap(false);
+            setGameState("results");
+          }
+        }
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [gameState, currentRound, timeLimit, locations]);
+const startGame = (mode: GameMode, durationSec?: number) => {
     const newLocations = getRandomLocations(5)
     setLocations(newLocations)
     setCurrentRound(0)
     setResults([])
     setGameMode(mode)
     setTimeLimit(durationSec)
+    setTimeLeft(durationSec)
     setGameState("playing")
     setShowMap(false)
   }
@@ -56,6 +88,7 @@ export function GamePage() {
       setCurrentRound(currentRound + 1)
       setGameState("playing")
       setShowMap(false)
+      if (typeof timeLimit === "number") setTimeLeft(timeLimit)
     } else {
       setGameState("final")
     }
@@ -91,7 +124,7 @@ export function GamePage() {
           currentRound={currentRound + 1}
           totalRounds={locations.length}
           score={totalScore}
-          timeLeftSec={timeLimit}
+          timeLeftSec={typeof timeLeft === "number" ? timeLeft : undefined}
         />
 
         <div className="absolute inset-0 top-14">

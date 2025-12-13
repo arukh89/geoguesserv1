@@ -17,7 +17,7 @@ export function GlobalHeader() {
         <div className="flex items-center gap-2">
           <Button
             size="md"
-            onClick={() => router.push("/")}
+            onClick={() => { if (typeof window !== "undefined") { window.location.href = "/" } else { router.push("/") } }}
             aria-label="Home"
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-black/80 backdrop-blur-lg border-2 border-green-500/50 hover:bg-green-900/20 hover:border-green-400 transition-colors shadow-lg shadow-green-500/20 text-green-300 font-semibold hover:text-green-200"
           >
@@ -26,7 +26,7 @@ export function GlobalHeader() {
           </Button>
           <Button
             size="md"
-            onClick={() => router.back()}
+            onClick={() => { if (typeof window !== "undefined") { if (window.history.length > 1) { window.history.back() } else { window.location.href = "/" } } else { router.back() } }}
             aria-label="Back"
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-black/80 backdrop-blur-lg border-2 border-green-500/50 hover:bg-green-900/20 hover:border-green-400 transition-colors shadow-lg shadow-green-500/20 text-green-300 font-semibold hover:text-green-200"
           >
