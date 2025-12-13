@@ -7,9 +7,9 @@
     "miniapp":  {
                     "version":  "1",
                     "name":  "Farcaster Geo Explorer",
-                    "iconUrl":  "/icon.png",
+                    "iconUrl":  "https://v0-geoguesser-7k.vercel.app/icon.png",
                     "homeUrl":  "https://v0-geoguesser-7k.vercel.app/",
-                    "splashImageUrl":  "/splash.png",
+                    "splashImageUrl":  "https://v0-geoguesser-7k.vercel.app/splash.png",
                     "splashBackgroundColor":  "#001a0f",
                     "subtitle":  "Test your geography skills",
                     "description":  "Explore the world through street view panoramas. Guess locations, compete on leaderboards, and earn rewards on Base blockchain.",
@@ -26,7 +26,10 @@
                     "requiredCapabilities":  [
                                                  "wallet.getEthereumProvider"
                                              ],
-                    "imageUrl":  "/preview.png",
-                    "ogImageUrl":  "/thumbnail.png"
-                }
+                    "imageUrl":  "https://v0-geoguesser-7k.vercel.app/preview.png",
+                    "ogImageUrl":  "https://v0-geoguesser-7k.vercel.app/thumbnail.png"
+                },
+    "baseBuilder":  {
+                        "ownerAddress":  "0xAFf0244070a126525D45D334F2e3A3670F1A7CD1"
+                    }
 }
