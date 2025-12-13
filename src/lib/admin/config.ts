@@ -1,4 +1,4 @@
-// Admin configuration
+﻿// Admin configuration
 export const ADMIN_USERS = [
   {
     fid: 250704,
@@ -19,4 +19,16 @@ export function isAdmin(fid?: number): boolean {
 
 export function getAdminByFid(fid: number) {
   return ADMIN_USERS.find((admin) => admin.fid === fid)
+}
+
+export function isAdminWallet(address?: string): boolean {
+  if (!address) return false
+  const a = address.toLowerCase()
+  return ADMIN_USERS.some((admin) => admin.wallet.toLowerCase() === a)
+}
+
+export function getAdminByWallet(address?: string) {
+  if (!address) return undefined
+  const a = address.toLowerCase()
+  return ADMIN_USERS.find((admin) => admin.wallet.toLowerCase() === a)
 }

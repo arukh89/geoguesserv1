@@ -1,12 +1,18 @@
 ﻿"use client"
 
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
-import { isAdmin, getAdminByFid } from "@/lib/admin/config"
+import { isAdmin, getAdminByFid, isAdminWallet, getAdminByWallet } from "@/lib/admin/config"
 import { AdminPanel } from "@/components/admin/AdminPanel"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAccount } from "wagmi"
 
 export default function AdminPage() {
   const { user, loading } = useFarcasterUser()
+  const { address, isConnected } = useAccount()
+
+  const adminFromFid = user?.fid ? getAdminByFid(user.fid) : undefined
+  const adminFromWallet = isConnected && address ? getAdminByWallet(address) : undefined
+  const admin = adminFromFid ?? adminFromWallet
 
   if (loading) {
     return (
@@ -16,7 +22,7 @@ export default function AdminPage() {
     )
   }
 
-  if (!user || !isAdmin(user.fid)) {
+  if (!admin) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
         <Card className="max-w-md bg-black/90 border-2 border-red-500/50">
@@ -27,7 +33,10 @@ export default function AdminPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-400">Only authorized administrators can access this panel.</p>
+            <p className="text-gray-400">
+              Only authorized administrators can access this panel.
+              If you are an admin, please open from Farcaster mini-app or connect the admin wallet.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -37,7 +46,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-black p-4">
       <div className="max-w-4xl mx-auto">
-        {(() => { const admin = getAdminByFid(user!.fid)!; return <AdminPanel adminFid={admin.fid} adminWallet={admin.wallet} /> })()}
+        <AdminPanel adminFid={admin.fid} adminWallet={admin.wallet} />
       </div>
     </div>
   )
