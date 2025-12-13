@@ -1,14 +1,57 @@
 import { http, createConfig } from "wagmi"
 import { base } from "wagmi/chains"
 import { injected, coinbaseWallet } from "wagmi/connectors"
-import { farcasterMiniApp } from "@farcaster/miniapp-wagmi-connector"
+
+let farcasterMiniApp: any = null
+
+if (typeof window !== "undefined") {
+  try {
+    // Only try to import in browser environment
+    import("@farcaster/miniapp-wagmi-connector")
+      .then((module) => {
+        farcasterMiniApp = module.farcasterMiniApp
+      })
+      .catch(() => {
+        // Silently fail if not available
+      })
+  } catch (e) {
+    // Not in miniapp context
+  }
+}
 
 // Get WalletConnect project ID from environment
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ""
 
+// Build connectors array - order matters for auto-connection
+function getConnectors() {
+  const connectors = []
+
+  // Add Farcaster miniapp connector first if available (for Warpcast)
+  if (farcasterMiniApp) {
+    try {
+      connectors.push(farcasterMiniApp())
+    } catch (e) {
+      console.log("Farcaster miniapp connector not initialized")
+    }
+  }
+
+  // Coinbase Wallet for Base miniapp
+  connectors.push(
+    coinbaseWallet({
+      appName: "Farcaster Geo Explorer",
+      appLogoUrl: "https://geoguesser.example.com/logo.png",
+    }),
+  )
+
+  // Injected wallet (MetaMask, etc)
+  connectors.push(injected())
+
+  return connectors
+}
+
 export const wagmiConfig = createConfig({
   chains: [base],
-  connectors: [farcasterMiniApp(), injected(), coinbaseWallet({ appName: "Geoguesser" })],
+  connectors: getConnectors(),
   transports: {
     [base.id]: http(),
   },

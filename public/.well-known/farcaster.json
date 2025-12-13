@@ -1,0 +1,21 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjEyMzQsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIn0",
+    "payload": "eyJkb21haW4iOiJnZW9ndWVzc2VyLmV4YW1wbGUuY29tIn0",
+    "signature": "PLACEHOLDER_SIGNATURE"
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Farcaster Geo Explorer",
+    "iconUrl": "https://geoguesser.example.com/icon.png",
+    "homeUrl": "https://geoguesser.example.com/",
+    "splashImageUrl": "https://geoguesser.example.com/splash.png",
+    "splashBackgroundColor": "#000000",
+    "subtitle": "Test your geography skills",
+    "description": "Explore the world through street view panoramas. Guess locations, compete on leaderboards, and earn rewards on Base blockchain.",
+    "primaryCategory": "games",
+    "tags": ["geography", "game", "exploration", "blockchain"],
+    "requiredChains": ["eip155:8453"],
+    "requiredCapabilities": ["wallet.getEthereumProvider"]
+  }
+}

@@ -74,11 +74,7 @@ export default function HomeScreen({ onStart }: HomeScreenProps) {
   }, [])
 
   return (
-    <div
-      className="flex items-start justify-center relative isolate z-0 bg-black"
-      style={{ height: "calc(100vh - 44px)", padding: "20px 60px 40px 60px", overflow: "hidden" }}
-    >
-      {/* Left Dropdown Menu */}
+    <div className="flex items-start justify-center relative isolate z-0 bg-black px-4 py-8 md:px-16 md:py-10 min-h-full overflow-auto">
       <GameModeDropdown onStart={onStart} />
 
       <canvas
@@ -92,7 +88,6 @@ export default function HomeScreen({ onStart }: HomeScreenProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         className="max-w-4xl w-full relative z-10"
-        style={{ zIndex: 2, maxHeight: "calc(100vh - 120px)", overflowY: "auto" }}
       >
         <div className="text-center mb-6">
           <motion.div

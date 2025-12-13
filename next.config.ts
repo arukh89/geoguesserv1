@@ -12,10 +12,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.kartaview.org" as any },
     ],
   },
-  // Explicitly use src directory for app router
-  experimental: {
-    appDir: true,
-  },
 }
 
 export default nextConfig

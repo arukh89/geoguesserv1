@@ -1,60 +1,29 @@
-"use client";
+"use client"
 
-import { motion } from "framer-motion";
-import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Target, MapPin, ArrowRight } from "lucide-react";
-import type { RoundResult } from "@/lib/game/types";
-import { formatDistance, getPerformanceMessage } from "@/lib/game/scoring";
-import type { LatLngExpression, LatLngBoundsExpression } from "leaflet";
-import "@/lib/leaflet.config";
-
-// Dynamically import react-leaflet components to avoid SSR issues
-const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
-const Polyline = dynamic(() => import("react-leaflet").then((m) => m.Polyline), { ssr: false });
-const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
+import { motion } from "framer-motion"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Trophy, Target, MapPin, ArrowRight } from "lucide-react"
+import type { RoundResult } from "@/lib/game/types"
+import { formatDistance, getPerformanceMessage } from "@/lib/game/scoring"
 
 interface ResultsScreenProps {
-  result: RoundResult;
-  onNext: () => void;
-  isLastRound: boolean;
+  result: RoundResult
+  onNext: () => void
+  isLastRound: boolean
 }
 
 export default function ResultsScreen({ result, onNext, isLastRound }: ResultsScreenProps) {
-  const [isClient, setIsClient] = useState(false);
-  const [icons, setIcons] = useState<{ actual: any; guess: any } | null>(null);
+  const scorePercentage = (result.score / 5000) * 100
+  const performanceMessage = getPerformanceMessage(result.score, 5000)
 
-  useEffect(() => {
-    setIsClient(true);
-    (async () => {
-      const leafletMod: any = await import("leaflet");
-      const L = leafletMod.default ?? leafletMod;
-      const actual = L.divIcon({ className: "mx-marker", html: "", iconSize: [18, 18], iconAnchor: [9, 9] });
-      const guess = L.divIcon({ className: "mx-marker guess", html: "", iconSize: [18, 18], iconAnchor: [9, 9] });
-      setIcons({ actual, guess });
-    })();
-  }, []);
+  const latToY = (lat: number) => ((90 - lat) / 180) * 100
+  const lngToX = (lng: number) => ((lng + 180) / 360) * 100
 
-  const scorePercentage = (result.score / 5000) * 100;
-  const performanceMessage = getPerformanceMessage(result.score, 5000);
-
-  const actualPosition: LatLngExpression = [result.location.lat, result.location.lng];
-  const guessPosition: LatLngExpression = [result.guess.lat, result.guess.lng];
-  const linePositions: LatLngExpression[] = [actualPosition, guessPosition];
-  const leafletBounds: LatLngBoundsExpression = [
-    [
-      Math.min(result.location.lat, result.guess.lat),
-      Math.min(result.location.lng, result.guess.lng),
-    ],
-    [
-      Math.max(result.location.lat, result.guess.lat),
-      Math.max(result.location.lng, result.guess.lng),
-    ],
-  ];
+  const actualX = lngToX(result.location.lng)
+  const actualY = latToY(result.location.lat)
+  const guessX = lngToX(result.guess.lng)
+  const guessY = latToY(result.guess.lat)
 
   return (
     <div className="min-h-screen p-4 pt-16 md:pt-8">
@@ -64,60 +33,62 @@ export default function ResultsScreen({ result, onNext, isLastRound }: ResultsSc
         transition={{ duration: 0.5 }}
         className="max-w-6xl mx-auto"
       >
-        <Card className="shadow-2xl overflow-hidden mx-panel">
-          <CardHeader className="text-[var(--text)] border-b mx-border">
+        <Card className="shadow-2xl overflow-hidden bg-black/90 backdrop-blur-lg border-2 border-green-500/50">
+          <CardHeader className="border-b-2 border-green-500/30">
             <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
-              <CardTitle className="text-3xl flex items-center gap-3 text-[var(--accent)]">
+              <CardTitle className="text-3xl flex items-center gap-3 text-green-400 font-bold">
                 <Trophy className="w-8 h-8" />
                 Round {result.round} Results
               </CardTitle>
-              <CardDescription className="text-[color:rgba(151,255,151,0.85)] text-lg mt-2">{performanceMessage}</CardDescription>
+              <CardDescription className="text-green-300 text-lg mt-2 font-semibold">
+                {performanceMessage}
+              </CardDescription>
             </motion.div>
           </CardHeader>
 
-          <CardContent className="p-6 space-y-6 text-[var(--text)]">
+          <CardContent className="p-6 space-y-6">
             <motion.div
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
               className="grid grid-cols-1 md:grid-cols-3 gap-4"
             >
-              <Card className="mx-panel">
+              <Card className="bg-black/80 border-2 border-green-500/50">
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.08)] border mx-border">
-                      <Target className="w-5 h-5 text-[var(--accent)]" />
+                    <div className="p-2 rounded-lg bg-green-500/20 border-2 border-green-500/50">
+                      <Target className="w-5 h-5 text-green-400" />
                     </div>
-                    <div className="font-semibold">Location</div>
+                    <div className="font-semibold text-green-300">Location</div>
                   </div>
-                  <div className="text-2xl font-bold text-[var(--accent)]">{result.location.name}</div>
-                  <div className="text-sm text-[color:rgba(151,255,151,0.8)] mt-1">{result.location.country}</div>
+                  <div className="text-2xl font-bold text-green-400">{result.location.name}</div>
+                  <div className="text-sm text-green-300 mt-1">{result.location.country}</div>
                 </CardContent>
               </Card>
 
-              <Card className="mx-panel">
+              <Card className="bg-black/80 border-2 border-green-500/50">
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.08)] border mx-border">
-                      <MapPin className="w-5 h-5 text-[var(--accent)]" />
+                    <div className="p-2 rounded-lg bg-green-500/20 border-2 border-green-500/50">
+                      <MapPin className="w-5 h-5 text-green-400" />
                     </div>
-                    <div className="font-semibold">Distance</div>
+                    <div className="font-semibold text-green-300">Distance</div>
                   </div>
-                  <div className="text-2xl font-bold text-[var(--accent)]">{formatDistance(result.distance)}</div>
-                  <div className="text-sm text-[color:rgba(151,255,151,0.8)] mt-1">from actual location</div>
+                  <div className="text-2xl font-bold text-green-400">{formatDistance(result.distance)}</div>
+                  <div className="text-sm text-green-300 mt-1">from actual location</div>
                 </CardContent>
               </Card>
 
-              <Card className="mx-panel">
+              <Card className="bg-black/80 border-2 border-green-500/50">
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.08)] border mx-border">
-                      <Trophy className="w-5 h-5 text-[var(--accent)]" />
+                    <div className="p-2 rounded-lg bg-green-500/20 border-2 border-green-500/50">
+                      <Trophy className="w-5 h-5 text-green-400" />
                     </div>
-                    <div className="font-semibold">Score</div>
+                    <div className="font-semibold text-green-300">Score</div>
                   </div>
-                  <div className="text-2xl font-bold text-[var(--accent)]">{result.score.toLocaleString()}</div>
-                  <div className="text-sm text-[color:rgba(151,255,151,0.8)] mt-1">{scorePercentage.toFixed(1)}% accuracy</div>
+                  <div className="text-2xl font-bold text-green-400">{result.score.toLocaleString()}</div>
+                  <div className="text-sm text-green-300 mt-1">{scorePercentage.toFixed(1)}% accuracy</div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -126,40 +97,67 @@ export default function ResultsScreen({ result, onNext, isLastRound }: ResultsSc
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="h-96 rounded-lg overflow-hidden mx-panel"
+              className="h-96 rounded-lg overflow-hidden border-2 border-green-500/50 relative bg-black"
             >
-              {isClient && (
-                <MapContainer bounds={leafletBounds} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
-                  <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                    subdomains={["a","b","c","d"] as any}
-                  />
+              {/* World map background */}
+              <div className="absolute inset-0 bg-[#0a0a0a]">
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/8/83/Equirectangular_projection_SW.jpg"
+                  alt="World Map"
+                  className="w-full h-full object-cover opacity-40"
+                />
+                {/* Grid overlay */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,65,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,65,0.1)_1px,transparent_1px)] bg-[size:40px_40px]" />
+              </div>
 
-                  <Marker position={actualPosition} icon={icons?.actual as any}>
-                    <Popup>
-                      <div className="font-semibold text-[var(--accent)]">Actual Location</div>
-                      <div className="text-sm text-[color:rgba(151,255,151,0.9)]">{result.location.name}</div>
-                    </Popup>
-                  </Marker>
+              {/* Connection line */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                <line
+                  x1={`${actualX}%`}
+                  y1={`${actualY}%`}
+                  x2={`${guessX}%`}
+                  y2={`${guessY}%`}
+                  stroke="#00ff41"
+                  strokeWidth="2"
+                  strokeDasharray="10 5"
+                  opacity="0.8"
+                />
+              </svg>
 
-                  <Marker position={guessPosition} icon={icons?.guess as any}>
-                    <Popup>
-                      <div className="font-semibold text-[var(--accent)]">Your Guess</div>
-                      <div className="text-sm text-[color:rgba(151,255,151,0.9)]">{formatDistance(result.distance)} away</div>
-                    </Popup>
-                  </Marker>
+              {/* Actual location marker */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.6, type: "spring" }}
+                className="absolute w-5 h-5 -ml-2.5 -mt-2.5"
+                style={{ left: `${actualX}%`, top: `${actualY}%` }}
+              >
+                <div className="w-full h-full rounded-full bg-green-400 border-2 border-white shadow-lg shadow-green-500/50 animate-pulse" />
+                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs bg-black/90 px-2 py-1 rounded border-2 border-green-500/50 text-green-300 font-semibold">
+                  Actual
+                </div>
+              </motion.div>
 
-                  <Polyline positions={linePositions} pathOptions={{ color: "#00ff41", weight: 2, opacity: 0.9, dashArray: "10 10", className: "mx-polyline" }} />
-                </MapContainer>
-              )}
+              {/* Guess location marker */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.7, type: "spring" }}
+                className="absolute w-5 h-5 -ml-2.5 -mt-2.5"
+                style={{ left: `${guessX}%`, top: `${guessY}%` }}
+              >
+                <div className="w-full h-full rounded-full bg-red-500 border-2 border-white shadow-lg shadow-red-500/50" />
+                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs bg-black/90 px-2 py-1 rounded border-2 border-red-500/50 text-red-400 font-semibold">
+                  Your Guess
+                </div>
+              </motion.div>
             </motion.div>
 
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.7 }}>
               <Button
                 onClick={onNext}
                 size="lg"
-                className="w-full h-14 text-lg"
+                className="w-full h-14 text-lg font-semibold bg-black/80 backdrop-blur-lg border-2 border-green-500/50 hover:bg-green-900/20 hover:border-green-400 transition-colors shadow-lg shadow-green-500/20 text-green-300 hover:text-green-200"
               >
                 {isLastRound ? "View Final Results" : "Next Round"}
                 <ArrowRight className="w-5 h-5 ml-2" />
@@ -169,5 +167,5 @@ export default function ResultsScreen({ result, onNext, isLastRound }: ResultsSc
         </Card>
       </motion.div>
     </div>
-  );
+  )
 }

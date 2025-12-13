@@ -14,6 +14,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@coinbase/wallet-sdk": "^4.2.3",
     "@emotion/is-prop-valid": "latest",
     "@farcaster/miniapp-sdk": "^0.2.1",
     "@farcaster/miniapp-wagmi-connector": "^0.0.0-canary-20250630212339",
@@ -27,7 +28,6 @@
     "@tailwindcss/postcss": "^4.1.9",
     "@tanstack/query-core": "latest",
     "@tanstack/react-query": "5.76.0",
-    "@types/leaflet": "^1.9.21",
     "@types/request": "^2.48.12",
     "@vercel/analytics": "1.6.1",
     "@wagmi/core": "latest",
@@ -35,7 +35,7 @@
     "clsx": "2.1.1",
     "d3-geo": "^3.1.1",
     "framer-motion": "^12.12.1",
-    "leaflet": "^1.9.4",
+    "leaflet": "1.9.4",
     "lucide-react": "^0.511.0",
     "mapillary-js": "^4.1.2",
     "next": "16.0.10",
@@ -43,7 +43,7 @@
     "pbf": "^4.0.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-leaflet": "^5.0.0",
+    "react-leaflet": "5.0.0",
     "sonner": "^2.0.3",
     "tailwind-merge": "3.4.0",
     "tailwindcss-animate": "1.0.7",

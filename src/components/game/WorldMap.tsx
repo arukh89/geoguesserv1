@@ -1,173 +1,116 @@
-'use client';
+"use client"
 
-import { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import type { LatLngExpression } from 'leaflet';
-import '@/lib/leaflet.config';
-import { Button } from '@/components/ui/button';
-import { MapPin, X } from 'lucide-react';
+import type React from "react"
+
+import { useState, useRef } from "react"
+import { MapPin } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface WorldMapProps {
-  onGuess: (lat: number, lng: number) => void;
-  disabled?: boolean;
-  active?: boolean; // when shown as overlay
+  onGuess: (lat: number, lng: number) => void
+  disabled?: boolean
+  active?: boolean
 }
 
-interface MapPosition {
-  lat: number;
-  lng: number;
-}
+export default function WorldMap({ onGuess, disabled = false }: WorldMapProps) {
+  const [markerPosition, setMarkerPosition] = useState<{ x: number; y: number } | null>(null)
+  const mapRef = useRef<HTMLDivElement>(null)
 
-function AutoResize({ active }: { active?: boolean }) {
-  const map = useMap();
-  useEffect(() => {
-    const t = setTimeout(() => {
-      try { map.invalidateSize(); } catch {}
-    }, 50);
-    return () => clearTimeout(t);
-  }, [map]);
-  useEffect(() => {
-    if (!active) return;
-    const t1 = setTimeout(() => { try { map.invalidateSize(); } catch {} }, 50);
-    const t2 = setTimeout(() => { try { map.invalidateSize(); } catch {} }, 300);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [active, map]);
-  return null;
-}
+  const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (disabled) return
 
-function ClickCapture({ onPick }: { onPick: (pos: MapPosition) => void }) {
-  const map = useMap();
-  const ref = useRef<HTMLDivElement | null>(null);
-  const handle = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const point = map.containerPointToLatLng([e.clientX - rect.left, e.clientY - rect.top]);
-    onPick({ lat: point.lat, lng: point.lng });
-  };
-  return (
-    <div
-      ref={ref}
-      onClick={handle}
-      style={{ position: 'absolute', inset: 0, zIndex: 450, background: 'transparent' }}
-      aria-hidden="true"
-    />
-  );
-}
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
 
-function DefaultPositionOnActive({ active, onSet }: { active?: boolean; onSet: (pos: MapPosition) => void }) {
-  const map = useMap();
-  useEffect(() => {
-    if (!active) return;
-    try {
-      const c = map.getCenter();
-      onSet({ lat: c.lat, lng: c.lng });
-    } catch {}
-  }, [active, map, onSet]);
-  return null;
-}
+    // Convert pixel coordinates to lat/lng
+    // Map dimensions: width = 360 degrees, height = 180 degrees
+    const lng = (x / rect.width) * 360 - 180
+    const lat = 90 - (y / rect.height) * 180
 
-export default function WorldMap({ onGuess, disabled = false, active }: WorldMapProps) {
-  const [position, setPosition] = useState<MapPosition | null>(null);
-  const [isClient] = useState<boolean>(typeof window !== 'undefined');
-  const [useFallbackTiles, setUseFallbackTiles] = useState(false);
-
-  const handlePositionClick = (pos: MapPosition): void => {
-    if (!disabled) {
-      setPosition(pos);
-    }
-  };
-
-  const handleConfirmGuess = (): void => {
-    if (position) {
-      onGuess(position.lat, position.lng);
-      setPosition(null);
-    }
-  };
-
-  const handleClearGuess = (): void => {
-    setPosition(null);
-  };
-
-  if (!isClient) {
-    return (
-      <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500">Loading map...</div>
-      </div>
-    );
+    setMarkerPosition({ x, y })
   }
 
-  const center: LatLngExpression = [20, 0];
+  const handleConfirmGuess = () => {
+    if (!markerPosition || !mapRef.current) return
+
+    const rect = mapRef.current.getBoundingClientRect()
+    const lng = (markerPosition.x / rect.width) * 360 - 180
+    const lat = 90 - (markerPosition.y / rect.height) * 180
+
+    onGuess(lat, lng)
+  }
 
   return (
-    <div className="relative w-full h-full">
-      <MapContainer
-        center={center}
-        zoom={2}
-        style={{ height: '100%', width: '100%' }}
-        scrollWheelZoom={true}
-        zoomControl={true}
-      >
-        <AutoResize active={active} />
-        {!useFallbackTiles ? (
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            subdomains={['a','b','c','d'] as any}
-            eventHandlers={{ tileerror: () => { console.warn('Tile failed, switching to fallback'); setUseFallbackTiles(true); } }}
-          />
-        ) : (
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-        )}
+    <div className="w-full h-full flex flex-col bg-black">
+      {/* Map container */}
+      <div className="flex-1 relative overflow-hidden" ref={mapRef} onClick={handleMapClick}>
+        {/* World map image */}
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/8/83/Equirectangular_projection_SW.jpg"
+          alt="World Map"
+          className="w-full h-full object-cover"
+          draggable={false}
+        />
 
-        /* Use ClickCapture overlay for consistent click handling */
-        <ClickCapture onPick={handlePositionClick} />
-        <DefaultPositionOnActive active={active} onSet={(p) => setPosition((prev) => prev ?? p)} />
-
-        {position && (
-          <Marker position={[position.lat, position.lng]}>
-            <Popup>
-              <div className="text-sm">
-                <div className="font-semibold mb-1">Your Guess</div>
-                <div>Lat: {position.lat.toFixed(4)}</div>
-                <div>Lng: {position.lng.toFixed(4)}</div>
-              </div>
-            </Popup>
-          </Marker>
-        )}
-      </MapContainer>
-
-      {!disabled && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[1000] flex gap-2 items-center">
-          <Button
-            onClick={handleConfirmGuess}
-            size="lg"
-            className="shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!position}
-          >
-            <MapPin className="w-4 h-4 mr-2" />
-            Confirm Guess
-          </Button>
-          {position && (
-            <Button
-              onClick={handleClearGuess}
-              size="lg"
-              variant="secondary"
-              className="shadow-lg"
-            >
-              <X className="w-4 h-4 mr-2" />
-              Clear
-            </Button>
-          )}
-          <div className="px-4 py-2 rounded-lg shadow-lg text-sm mx-panel">
-            <span className="text-[color:rgba(151,255,151,0.9)]">
-              {position ? 'Click the map to adjust your guess' : 'Click on the map to place your guess'}
-            </span>
-          </div>
+        {/* Grid overlay */}
+        <div className="absolute inset-0 pointer-events-none">
+          <svg className="w-full h-full">
+            {/* Latitude lines */}
+            {Array.from({ length: 7 }).map((_, i) => (
+              <line
+                key={`lat-${i}`}
+                x1="0"
+                y1={`${(i * 100) / 6}%`}
+                x2="100%"
+                y2={`${(i * 100) / 6}%`}
+                stroke="rgba(34, 197, 94, 0.2)"
+                strokeWidth="1"
+              />
+            ))}
+            {/* Longitude lines */}
+            {Array.from({ length: 13 }).map((_, i) => (
+              <line
+                key={`lng-${i}`}
+                x1={`${(i * 100) / 12}%`}
+                y1="0"
+                x2={`${(i * 100) / 12}%`}
+                y2="100%"
+                stroke="rgba(34, 197, 94, 0.2)"
+                strokeWidth="1"
+              />
+            ))}
+          </svg>
         </div>
-      )}
+
+        {/* Marker */}
+        {markerPosition && (
+          <div
+            className="absolute -translate-x-1/2 -translate-y-full pointer-events-none animate-bounce"
+            style={{
+              left: markerPosition.x,
+              top: markerPosition.y,
+            }}
+          >
+            <MapPin className="w-8 h-8 text-green-500 fill-green-500 drop-shadow-lg" />
+          </div>
+        )}
+      </div>
+
+      {/* Instructions and Confirm Button */}
+      <div className="p-4 bg-black border-t border-green-500/20 flex items-center justify-between">
+        <div className="text-green-400 text-sm">
+          {markerPosition ? "Click Confirm to submit your guess" : "Click anywhere on the map to place your guess"}
+        </div>
+        <Button
+          onClick={handleConfirmGuess}
+          disabled={!markerPosition || disabled}
+          className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+          size="lg"
+        >
+          Confirm Guess
+        </Button>
+      </div>
     </div>
-  );
+  )
 }

@@ -105,7 +105,7 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
             <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
               <div className="text-6xl mb-2">{performance.emoji}</div>
               <CardTitle className="text-4xl mb-2 text-[var(--accent)]">{performance.title}!</CardTitle>
-              <CardDescription className="text-[color:rgba(151,255,151,0.9)] text-xl">
+              <CardDescription className="text-[var(--accent)] text-xl opacity-90">
                 {performance.message}
               </CardDescription>
             </motion.div>
@@ -118,14 +118,14 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
               transition={{ delay: 0.3 }}
               className="text-center py-6 rounded-lg mx-panel"
             >
-              <div className="text-sm font-semibold text-[color:rgba(151,255,151,0.8)] mb-2">TOTAL SCORE</div>
+              <div className="text-sm font-semibold text-[var(--accent)] mb-2 opacity-90">TOTAL SCORE</div>
               <div
                 className="text-6xl font-bold text-[var(--accent)]"
                 style={{ filter: "drop-shadow(0 0 12px rgba(0,255,65,.6))" }}
               >
                 {totalScore.toLocaleString()}
               </div>
-              <div className="text-sm text-[color:rgba(151,255,151,0.8)] mt-2">
+              <div className="text-sm text-[var(--accent)] opacity-80 mt-2">
                 {accuracyPercentage.toFixed(1)}% accuracy
               </div>
             </motion.div>
@@ -139,10 +139,10 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
               <Card className="mx-panel">
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.08)] border mx-border">
+                    <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.12)] border mx-border">
                       <MapPin className="w-5 h-5 text-[var(--accent)]" />
                     </div>
-                    <div className="font-semibold">Avg Distance</div>
+                    <div className="font-semibold text-[var(--accent)]">Avg Distance</div>
                   </div>
                   <div className="text-2xl font-bold text-[var(--accent)]">{formatDistance(averageDistance)}</div>
                 </CardContent>
@@ -151,26 +151,26 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
               <Card className="mx-panel">
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.08)] border mx-border">
+                    <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.12)] border mx-border">
                       <Trophy className="w-5 h-5 text-[var(--accent)]" />
                     </div>
-                    <div className="font-semibold">Best Round</div>
+                    <div className="font-semibold text-[var(--accent)]">Best Round</div>
                   </div>
                   <div className="text-2xl font-bold text-[var(--accent)]">{bestRound.score.toLocaleString()}</div>
-                  <div className="text-sm text-[color:rgba(151,255,151,0.8)] mt-1">{bestRound.location.name}</div>
+                  <div className="text-sm text-[var(--accent)] opacity-80 mt-1">{bestRound.location.name}</div>
                 </CardContent>
               </Card>
 
               <Card className="mx-panel">
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.08)] border mx-border">
+                    <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.12)] border mx-border">
                       <Target className="w-5 h-5 text-[var(--accent)]" />
                     </div>
-                    <div className="font-semibold">Rounds</div>
+                    <div className="font-semibold text-[var(--accent)]">Rounds</div>
                   </div>
                   <div className="text-2xl font-bold text-[var(--accent)]">{results.length}</div>
-                  <div className="text-sm text-[color:rgba(151,255,151,0.8)] mt-1">completed</div>
+                  <div className="text-sm text-[var(--accent)] opacity-80 mt-1">completed</div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -192,15 +192,15 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
                             {index + 1}
                           </div>
                           <div>
-                            <div className="font-semibold">{result.location.name}</div>
-                            <div className="text-sm text-[color:rgba(151,255,151,0.8)]">
+                            <div className="font-semibold text-[var(--accent)]">{result.location.name}</div>
+                            <div className="text-sm text-[var(--accent)] opacity-80">
                               {formatDistance(result.distance)} away
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="font-bold text-[var(--accent)]">{result.score.toLocaleString()}</div>
-                          <div className="text-xs text-[color:rgba(151,255,151,0.7)]">points</div>
+                          <div className="text-xs text-[var(--accent)] opacity-70">points</div>
                         </div>
                       </div>
                     ))}
@@ -215,11 +215,16 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
               transition={{ delay: 0.9 }}
               className="flex flex-col sm:flex-row gap-3"
             >
-              <Button onClick={onShare} size="lg" className="flex-1 h-14 text-lg">
+              <Button onClick={onShare} size="lg" className="flex-1 h-14 text-lg font-semibold">
                 <Share2 className="w-5 h-5 mr-2" />
                 Share on Farcaster
               </Button>
-              <Button onClick={onPlayAgain} size="lg" variant="outline" className="flex-1 h-14 text-lg bg-transparent">
+              <Button
+                onClick={onPlayAgain}
+                size="lg"
+                variant="outline"
+                className="flex-1 h-14 text-lg font-semibold bg-transparent"
+              >
                 <RotateCcw className="w-5 h-5 mr-2" />
                 Play Again
               </Button>
