@@ -26,8 +26,12 @@
                     "requiredCapabilities":  [
                                                  "wallet.getEthereumProvider"
                                              ],
-                    "imageUrl":  "https://v0-geoguesser-7k.vercel.app/splash.png",
-                    "ogImageUrl":  "https://v0-geoguesser-7k.vercel.app/splash.png"
+                    "imageUrl":  "https://v0-geoguesser-7k.vercel.app/imageUrl.png",
+                    "ogImageUrl":  "https://v0-geoguesser-7k.vercel.app/heroImageUrl.png",
+                    "heroImageUrl":  "https://v0-geoguesser-7k.vercel.app/heroImageUrl.png",
+                    "screenshotUrls":  [
+                                           "https://v0-geoguesser-7k.vercel.app/screenshotUrls.png"
+                                       ]
                 },
     "baseBuilder":  {
                         "ownerAddress":  "0xAFf0244070a126525D45D334F2e3A3670F1A7CD1"
