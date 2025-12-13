@@ -1,4 +1,4 @@
-import type React from "react"
+import type { ReactNode } from "react"
 import type { Metadata } from "next"
 import { Share_Tech_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark">
       <body className={`${shareTechMono.className} font-mono antialiased min-h-screen flex flex-col bg-black`}>
@@ -43,4 +43,3 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   )
 }
-
