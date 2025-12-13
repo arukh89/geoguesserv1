@@ -1,7 +1,7 @@
 ﻿"use client"
 
 import { Button } from "@/components/ui/button"
-import { Trophy, Shield, HomeIcon, ArrowLeft } from "lucide-react"
+import { Trophy, Shield, HomeIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
 import { isAdmin } from "@/lib/admin/config"
@@ -25,15 +25,6 @@ export function GlobalHeader() {
             <HomeIcon className="w-4 h-4" />
             Home
           </Button>
-          <Button
-            size="md"
-            onClick={() => { if (typeof window !== "undefined") { if (window.history.length > 1) { window.history.back() } else { window.location.href = "/" } } else { router.back() } }}
-            aria-label="Back"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-black/80 backdrop-blur-lg border-2 border-green-500/50 hover:bg-green-900/20 hover:border-green-400 transition-colors shadow-lg shadow-green-500/20 text-green-300 font-semibold hover:text-green-200"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -47,6 +38,12 @@ export function GlobalHeader() {
             Leaderboard
           </Button>
 
+          {user && (
+            <div className="px-2 py-1 rounded-md border border-green-500/40 text-green-300 text-xs font-mono bg-black/60">
+              @{user.username ?? user.fid}
+            </div>
+          )}
+
           {isAdminUser && (
             <Button
               size="md"
@@ -59,7 +56,7 @@ export function GlobalHeader() {
             </Button>
           )}
 
-          <LoginButton />
+          {!user && <LoginButton />}
         </div>
       </div>
     </header>
