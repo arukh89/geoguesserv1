@@ -1,55 +1,50 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
-import { getAdminByFid } from "@/lib/admin/config"
+import { isAdmin } from "@/lib/admin/config"
 import { AdminPanel } from "@/components/admin/AdminPanel"
-import GlobalHeader from "@/components/GlobalHeader"
-import { Card } from "@/components/ui/card"
-import { Loader2, ShieldAlert } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function AdminPage() {
-  const { user, loading } = useFarcasterUser()
+  const { fid, isLoading } = useFarcasterUser()
+  const [mounted, setMounted] = useState(false)
 
-  if (loading) {
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted || isLoading) {
     return (
-      <>
-        <GlobalHeader />
-        <main className="min-h-screen bg-[var(--bg)] p-4">
-          <div className="max-w-6xl mx-auto flex items-center justify-center py-20">
-            <Loader2 className="w-12 h-12 animate-spin text-[var(--accent)]" />
-          </div>
-        </main>
-      </>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-green-400 text-xl">Loading...</div>
+      </div>
     )
   }
 
-  const admin = user?.fid ? getAdminByFid(user.fid) : null
-
-  if (!admin) {
+  if (!fid || !isAdmin(fid)) {
     return (
-      <>
-        <GlobalHeader />
-        <main className="min-h-screen bg-[var(--bg)] p-4">
-          <div className="max-w-2xl mx-auto pt-20">
-            <Card className="p-12 text-center">
-              <ShieldAlert className="w-16 h-16 mx-auto mb-4 text-red-500" />
-              <h1 className="text-2xl font-bold text-[var(--text)] mb-2">Access Denied</h1>
-              <p className="text-[var(--text-secondary)]">You do not have permission to access the admin panel.</p>
-            </Card>
-          </div>
-        </main>
-      </>
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <Card className="max-w-md bg-black/90 border-2 border-red-500/50">
+          <CardHeader>
+            <CardTitle className="text-red-400">Access Denied</CardTitle>
+            <CardDescription className="text-red-300/70">
+              You do not have permission to access this page.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-400">Only authorized administrators can access this panel.</p>
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
   return (
-    <>
-      <GlobalHeader />
-      <main className="min-h-screen bg-[var(--bg)] p-4">
-        <div className="max-w-6xl mx-auto pt-6">
-          <AdminPanel adminFid={admin.fid} adminWallet={admin.wallet} />
-        </div>
-      </main>
-    </>
+    <div className="min-h-screen bg-black p-4">
+      <div className="max-w-4xl mx-auto">
+        <AdminPanel />
+      </div>
+    </div>
   )
 }

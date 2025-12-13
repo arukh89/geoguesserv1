@@ -1,16 +1,17 @@
+"use client"
+
 import { WeeklyLeaderboard } from "@/components/game/WeeklyLeaderboard"
 
 export default function LeaderboardPage() {
   return (
-    <main className="min-h-screen p-4 md:p-8">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold">Leaderboard</h1>
-          <p className="text-muted-foreground">Compete for the top spot and claim MOONSHOT tokens on Base mainnet!</p>
+    <div className="min-h-screen bg-black p-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-4xl font-bold text-green-400 mb-2">Weekly Leaderboard</h1>
+          <p className="text-green-300/70">Top 10 players compete for MOONSHOT token rewards</p>
         </div>
-
         <WeeklyLeaderboard />
       </div>
-    </main>
+    </div>
   )
 }
