@@ -1,0 +1,30 @@
+{
+    "accountAssociation":  {
+                               "header":  "eyJmaWQiOjEyMzQsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIn0",
+                               "payload":  "eyJkb21haW4iOiJnZW9ndWVzc2VyLmV4YW1wbGUuY29tIn0",
+                               "signature":  "PLACEHOLDER_SIGNATURE"
+                           },
+    "miniapp":  {
+                    "version":  "1",
+                    "name":  "Farcaster Geo Explorer",
+                    "iconUrl":  "https://v0-geoguesser-7k.vercel.app/icon-dark-32x32.png",
+                    "homeUrl":  "https://v0-geoguesser-7k.vercel.app/",
+                    "splashImageUrl":  "https://v0-geoguesser-7k.vercel.app/apple-icon.png",
+                    "splashBackgroundColor":  "#000000",
+                    "subtitle":  "Test your geography skills",
+                    "description":  "Explore the world through street view panoramas. Guess locations, compete on leaderboards, and earn rewards on Base blockchain.",
+                    "primaryCategory":  "games",
+                    "tags":  [
+                                 "geography",
+                                 "game",
+                                 "exploration",
+                                 "blockchain"
+                             ],
+                    "requiredChains":  [
+                                           "eip155:8453"
+                                       ],
+                    "requiredCapabilities":  [
+                                                 "wallet.getEthereumProvider"
+                                             ]
+                }
+}
