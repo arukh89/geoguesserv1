@@ -1,6 +1,6 @@
-﻿import type React from "react"
+import type React from "react"
 import type { Metadata } from "next"
-import { Share_Tech_Mono, VT323 } from "next/font/google"
+import { Share_Tech_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Providers } from "./providers"
 import GlobalHeader from "@/components/GlobalHeader"
@@ -8,8 +8,6 @@ import FarcasterWrapper from "@/components/FarcasterWrapper"
 import "../styles/globals.css"
 
 const shareTechMono = Share_Tech_Mono({ subsets: ["latin"], weight: "400" })
-const vt323 = VT323({ subsets: ["latin"], weight: "400" })
-
 export const metadata: Metadata = {
   metadataBase: new URL("https://v0-geoguesser-7k.vercel.app"),
   title: "Farcaster Geo Explorer",
