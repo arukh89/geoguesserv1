@@ -1,17 +1,15 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
-// Supabase project configuration for nlnayrlaohukkxejlxsy
-const SUPABASE_URL = "https://nlnayrlaohukkxejlxsy.supabase.co"
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sbmF5cmxhb2h1a2t4ZWpseHN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU1OTkwMzEsImV4cCI6MjA4MTE3NTAzMX0.kvLl0bMPNy_pC_XG3hIlRs2ryknjJPrzK5k1zQS92eI"
+const DEFAULT_SUPABASE_URL = "https://example.supabase.co"
+const DEFAULT_SUPABASE_ANON_KEY = "public-anon-key"
 
 export async function createClient() {
   const cookieStore = await cookies()
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || SUPABASE_ANON_KEY,
+    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {

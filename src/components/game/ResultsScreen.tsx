@@ -1,6 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trophy, Target, MapPin, ArrowRight } from "lucide-react"
@@ -101,11 +102,7 @@ export default function ResultsScreen({ result, onNext, isLastRound }: ResultsSc
             >
               {/* World map background */}
               <div className="absolute inset-0 bg-[#0a0a0a]">
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/commons/8/83/Equirectangular_projection_SW.jpg"
-                  alt="World Map"
-                  className="w-full h-full object-cover opacity-40"
-                />
+                <Image src="/images/design-mode/Equirectangular_projection_SW.jpg" alt="World Map" fill sizes="100vw" className="object-cover opacity-40" />
                 {/* Grid overlay */}
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,65,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,65,0.1)_1px,transparent_1px)] bg-[size:40px_40px]" />
               </div>

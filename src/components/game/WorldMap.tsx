@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import Image from "next/image"
 
 import { useState, useRef } from "react"
 import { MapPin } from "lucide-react"
@@ -46,12 +47,7 @@ export default function WorldMap({ onGuess, disabled = false }: WorldMapProps) {
       {/* Map container */}
       <div className="flex-1 relative overflow-hidden" ref={mapRef} onClick={handleMapClick}>
         {/* World map image */}
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/8/83/Equirectangular_projection_SW.jpg"
-          alt="World Map"
-          className="w-full h-full object-cover"
-          draggable={false}
-        />
+        <Image src="/images/design-mode/Equirectangular_projection_SW.jpg" alt="World Map" fill sizes="100vw" className="object-cover" draggable={false} />
 
         {/* Grid overlay */}
         <div className="absolute inset-0 pointer-events-none">

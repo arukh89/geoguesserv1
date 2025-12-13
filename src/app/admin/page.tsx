@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
 import { isAdmin } from "@/lib/admin/config"
 import { AdminPanel } from "@/components/admin/AdminPanel"
@@ -8,13 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function AdminPage() {
   const { fid, isLoading } = useFarcasterUser()
-  const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-green-400 text-xl">Loading...</div>

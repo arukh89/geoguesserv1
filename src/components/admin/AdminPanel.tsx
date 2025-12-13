@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -50,9 +50,9 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
 
   useEffect(() => {
     loadWeeklyLeaderboard()
-  }, [])
+  }, [loadWeeklyLeaderboard])
 
-  async function loadWeeklyLeaderboard() {
+  const loadWeeklyLeaderboard = useCallback(async () => {
     try {
       setLoading(true)
 
@@ -104,7 +104,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
     } finally {
       setLoading(false)
     }
-  }
+    }, [supabase])
 
   async function handleSendTokens(entry: LeaderboardEntry) {
     if (!isConnected) {
