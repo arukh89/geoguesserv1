@@ -1,61 +1,38 @@
-import { http, createConfig } from "wagmi"
+﻿import { http, createConfig } from "wagmi"
 import { base } from "wagmi/chains"
 import { injected, coinbaseWallet } from "wagmi/connectors"
 
-let farcasterMiniApp: any = null
+// Build connectors array in a predictable order
+export function createWagmiConfig(farcasterFactory?: () => any) {
+  const connectors: any[] = []
 
-if (typeof window !== "undefined") {
-  try {
-    // Only try to import in browser environment
-    import("@farcaster/miniapp-wagmi-connector")
-      .then((module) => {
-        farcasterMiniApp = module.farcasterMiniApp
-      })
-      .catch(() => {
-        // Silently fail if not available
-      })
-  } catch (e) {
-    // Not in miniapp context
-  }
-}
-
-// Get WalletConnect project ID from environment
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ""
-
-// Build connectors array - order matters for auto-connection
-function getConnectors() {
-  const connectors = []
-
-  // Add Farcaster miniapp connector first if available (for Warpcast)
-  if (farcasterMiniApp) {
+  // Farcaster miniapp (Warpcast)
+  if (typeof window !== "undefined" && farcasterFactory) {
     try {
-      connectors.push(farcasterMiniApp())
-    } catch (e) {
-      console.log("Farcaster miniapp connector not initialized")
+      connectors.push(farcasterFactory())
+    } catch {
+      // ignore
     }
   }
 
-  // Coinbase Wallet for Base miniapp
+  // Coinbase Wallet (Base)
   connectors.push(
     coinbaseWallet({
       appName: "Farcaster Geo Explorer",
-      appLogoUrl: "https://geoguesser.example.com/logo.png",
     }),
   )
 
-  // Injected wallet (MetaMask, etc)
+  // Injected (MetaMask, etc.)
   connectors.push(injected())
 
-  return connectors
+  return createConfig({
+    chains: [base],
+    connectors,
+    transports: {
+      [base.id]: http(),
+    },
+  })
 }
-
-export const wagmiConfig = createConfig({
-  chains: [base],
-  connectors: getConnectors(),
-  transports: {
-    [base.id]: http(),
-  },
-})
 
 // Moonshot token contract on Base mainnet
 export const MOONSHOT_CONTRACT_ADDRESS =
