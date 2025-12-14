@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: "Farcaster Geo Explorer",
       description: "Explore the world. Test your geography skills. Share your scores on Farcaster!",
-      url: baseUrl,
+      url: "https://geoguesserv1.vercel.app",
       siteName: "Farcaster Geo Explorer",
       images: [
         {
@@ -51,8 +51,8 @@ export async function generateMetadata(): Promise<Metadata> {
           action: {
             type: "launch_frame",
             name: "Farcaster Geo Explorer",
-            url: baseUrl,
-            splashImageUrl: "https://geoguesserv1.vercel.app/icon.png/splash.png",
+            url: "https://geoguesserv1.vercel.app/,
+            splashImageUrl: "https://geoguesserv1.vercel.app/splash.png",
             splashBackgroundColor: #001a0f",
           },
         },
