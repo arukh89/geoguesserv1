@@ -18,9 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
     description: "Explore the world. Test your geography skills. Share your scores on Farcaster!",
  
     icons: {
-      icon: `${baseUrl}/icon.png`,
-      apple: `${baseUrl}/icon.png`,
-    },
+      icon: `https://geoguesserv1.vercel.app/icon.png`,
+     },
     openGraph: {
       title: "Farcaster Geo Explorer",
       description: "Explore the world. Test your geography skills. Share your scores on Farcaster!",
@@ -28,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: "Farcaster Geo Explorer",
       images: [
         {
-          url: `${baseUrl}/heroImageUrl.png`,
+          url: `https://geoguesserv1.vercel.app/icon.png/heroImageUrl.png`,
           width: 1200,
           height: 630,
           alt: "Farcaster Geo Explorer - Master the world in 3 simple steps",
@@ -41,19 +40,19 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: "Farcaster Geo Explorer",
       description: "Explore the world. Test your geography skills. Share your scores on Farcaster!",
-      images: [`${baseUrl}/heroImageUrl.png`],
+      images: [`https://geoguesserv1.vercel.app/icon.png/heroImageUrl.png`],
     },
     other: {
       "fc:miniapp": JSON.stringify({
         version: "next",
-        imageUrl: `${baseUrl}/heroImageUrl.png`,
+        imageUrl: `https://geoguesserv1.vercel.app/icon.png/heroImageUrl.png`,
         button: {
           title: "Play Game",
           action: {
             type: "launch_frame",
             name: "Farcaster Geo Explorer",
             url: baseUrl,
-            splashImageUrl: `${baseUrl}/splash.png`,
+            splashImageUrl: `https://geoguesserv1.vercel.app/icon.png/splash.png`,
             splashBackgroundColor: #001a0f",
           },
         },
