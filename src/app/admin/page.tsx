@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
 import { isAdmin, getAdminByFid, isAdminWallet, getAdminByWallet } from "@/lib/admin/config"
