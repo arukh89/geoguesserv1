@@ -29,3 +29,6 @@ next-env.d.ts
 .vercel
 
 .vercel
+
+# kilocode mcp configuration with secrets
+.kilocode/
