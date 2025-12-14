@@ -10,7 +10,7 @@ import "../styles/globals.css"
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://geoguesserv1.vercel.app"
+const baseUrl = "https://geoguesserv1.vercel.app"
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
