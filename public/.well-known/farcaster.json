@@ -1,8 +1,8 @@
 ﻿{
     "accountAssociation":  {
                                "header":  "eyJmaWQiOjI1MDcwNCwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDA5RDAyRDI1RDBEMDgyZjdGMkUwNGI0ODM4Y0VmZTI3MWIyZGFCMDkifQ",
-                               "payload":  "eyJkb21haW4iOiJ2MC1nZW9ndWVzc2VyLTdrLnZlcmNlbC5hcHAifQ",
-                               "signature":  "m/o0ob9zJo8t/8tDVPshOBk8Xw7j/gZhTyjFsOojXM1vWuGqB8a+FZ8teW4K75aMefk7GeBjp70AoFFLzm3uKhs="
+                               "payload":  "",
+                               "signature":  ""
                            },
     "miniapp":  {
                     "version":  "1",
@@ -10,7 +10,7 @@
                     "iconUrl":  "https://geoguesserv1.vercel.app/icon.png",
                     "homeUrl":  "https://geoguesserv1.vercel.app/",
                     "buttonTitle": "Open Farcaster Geo Explorer",
-                    "splashImageUrl":  "https://v0-geoguesser-7k.vercel.app/splash.png",
+                    "splashImageUrl":  "https://geoguesserv1.vercel.app/splash.png",
                     "splashBackgroundColor":  "#001a0f",
                     "subtitle":  "Test your geography skills",
                     "description":  "Explore the world through street view panoramas. Guess locations, compete on leaderboards, and earn rewards on Base blockchain.",
