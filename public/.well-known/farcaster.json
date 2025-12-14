@@ -7,8 +7,8 @@
     "miniapp":  {
                     "version":  "1",
                     "name":  "Farcaster Geo Explorer",
-                    "iconUrl":  "https://v0-geoguesser-7k.vercel.app/icon.png",
-                    "homeUrl":  "https://v0-geoguesser-7k.vercel.app/",
+                    "iconUrl":  "https://geoguesserv1.vercel.app/icon.png",
+                    "homeUrl":  "https://geoguesserv1.vercel.app/",
                     "buttonTitle": "Open Farcaster Geo Explorer",
                     "splashImageUrl":  "https://v0-geoguesser-7k.vercel.app/splash.png",
                     "splashBackgroundColor":  "#001a0f",
@@ -27,11 +27,11 @@
                     "requiredCapabilities":  [
                                                  "wallet.getEthereumProvider"
                                              ],
-                    "imageUrl":  "https://v0-geoguesser-7k.vercel.app/imageUrl.png",
-                    "ogImageUrl":  "https://v0-geoguesser-7k.vercel.app/heroImageUrl.png",
-                    "heroImageUrl":  "https://v0-geoguesser-7k.vercel.app/heroImageUrl.png",
+                    "imageUrl":  "https://geoguesserv1.vercel.app/imageUrl.png",
+                    "ogImageUrl":  "https://geoguesserv1.vercel.app/heroImageUrl.png",
+                    "heroImageUrl":  "https://geoguesserv1.vercel.app/heroImageUrl.png",
                     "screenshotUrls":  [
-                                           "https://v0-geoguesser-7k.vercel.app/screenshotUrls.png"
+                                           "https://geoguesserv1.vercel.app/screenshotUrls.png"
                                        ]
                 },
     "baseBuilder":  {
