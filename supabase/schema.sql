@@ -46,4 +46,10 @@ create policy if not exists scores_select_public on public.scores for select usi
 create policy if not exists scores_insert_public on public.scores for insert with check (true);
 
 create policy if not exists admin_rewards_select_public on public.admin_rewards for select using (true);
-create policy if not exists admin_rewards_insert_public on public.admin_rewards for insert with check (true);
+create policy if not exists admin_rewards_insert_public on public.admin_rewards for insert with check (true);-- Enable Realtime on these tables
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.scores;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.admin_rewards;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
