@@ -10,7 +10,7 @@
                     "iconUrl":  "https://geoguesserv1.vercel.app/icon.png",
                     "homeUrl":  "https://geoguesserv1.vercel.app/",
                     "buttonTitle": "Open Farcaster Geo Explorer",
-                    "splashImageUrl":  "https://v0-geoguesser-7k.vercel.app/splash.png",
+                    "splashImageUrl":  "https://geoguesserv1.vercel.app/splash.png",
                     "splashBackgroundColor":  "#001a0f",
                     "subtitle":  "Test your geography skills",
                     "description":  "Explore the world through street view panoramas. Guess locations, compete on leaderboards, and earn rewards on Base blockchain.",
