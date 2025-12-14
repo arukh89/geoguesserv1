@@ -2,6 +2,7 @@
   "name": "geoguesserv1",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "next build",
     "dev": "next dev",
@@ -53,14 +54,20 @@
     "wagmi": "3.1.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.49.0",
     "@types/geojson": "^7946.0.16",
     "@types/node": "25.0.1",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.49.0",
+    "@typescript-eslint/parser": "^8.49.0",
     "depcheck": "^1.4.7",
     "eslint": "^9.39.1",
     "eslint-config-next": "^16.0.10",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "postcss": "^8",
     "tailwindcss": "^4.1.9",
     "typescript": "5.9.3"
