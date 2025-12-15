@@ -69,7 +69,7 @@ export async function generateMetadata(): Promise<Metadata> {
           action: {
             type: "launch_frame",
             name: "Farcaster Geo Explorer",
-            url: https://geoguesserv1.vercel.app/,
+            url: "https://geoguesserv1.vercel.app",
             splashImageUrl: `https://geoguesserv1.vercel.app/splash.png`,
             splashBackgroundColor: "#001a0f",
           },
