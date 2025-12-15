@@ -36,3 +36,6 @@ next-env.d.ts
 
 # kilocode mcp configuration with secrets
 .kilocode/
+
+# vscode
+.vscode/
