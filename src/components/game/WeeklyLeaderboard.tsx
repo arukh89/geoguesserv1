@@ -172,7 +172,7 @@ export function WeeklyLeaderboard() {
                       <span>Score: {score.score_value.toLocaleString()}</span>
                       {score.weekly_rank <= 10 && (
                         <span className="text-green-600 font-semibold">
-                          • Prize: {getRewardAmount(score.weekly_rank)} MOONSHOT
+                          • Prize: {getRewardAmount(score.weekly_rank)} GEO
                         </span>
                       )}
                     </div>
@@ -193,14 +193,14 @@ export function WeeklyLeaderboard() {
             <div className="text-center py-12 text-muted-foreground">
               <Trophy className="h-12 w-12 mx-auto mb-3 opacity-20" />
               <p className="font-medium">No scores yet this week</p>
-              <p className="text-sm mt-1">Be the first to play and win MOONSHOT tokens!</p>
+              <p className="text-sm mt-1">Be the first to play and win GEO tokens!</p>
             </div>
           )}
         </div>
 
         <div className="mt-6 p-4 rounded-lg bg-muted/30 border">
           <p className="text-sm text-muted-foreground">
-            <strong>Note:</strong> Weekly winners will receive MOONSHOT tokens directly from our admin team. Make sure
+            <strong>Note:</strong> Weekly winners will receive GEO tokens directly from our admin team. Make sure
             your wallet address is correct when playing!
           </p>
         </div>
