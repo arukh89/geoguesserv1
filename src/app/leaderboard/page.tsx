@@ -1,6 +1,6 @@
 "use client"
 
-import { WeeklyLeaderboard } from "@/components/game/WeeklyLeaderboard"
+import WeeklyLeaderboard from "@/components/game/WeeklyLeaderboard"
 
 export default function LeaderboardPage() {
   return (
