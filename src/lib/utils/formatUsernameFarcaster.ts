@@ -89,6 +89,52 @@ export function formatUsernameForCompactDisplay(user: FarcasterUser | null): str
 }
 
 /**
+ * Formats username with FID for leaderboard display
+ * Shows: @username (FID: 12345) or just FID: 12345 if no username
+ * @param user - The user object or string
+ * @returns A formatted string with username and FID
+ */
+export function formatUsernameWithFid(user: FarcasterUser | null | string, fid?: number): string {
+  // Handle string input (from database)
+  if (typeof user === "string") {
+    if (fid) {
+      // If string starts with @, keep it, otherwise add @
+      const username = user.startsWith("@") ? user : (user.startsWith("fid:") ? user : `@${user}`);
+      if (username.startsWith("fid:")) {
+        return `FID: ${fid}`;
+      }
+      return `${username} (FID: ${fid})`;
+    }
+    return user;
+  }
+
+  // If no user data, return "Anonymous"
+  if (!user) {
+    return fid ? `FID: ${fid}` : "Anonymous";
+  }
+
+  const fidToShow = user.fid || fid;
+
+  // If we have username, show @username (FID: xxx)
+  if (user.username && user.username.trim() !== "") {
+    const username = `@${user.username.trim()}`;
+    return fidToShow ? `${username} (FID: ${fidToShow})` : username;
+  }
+  
+  // If we have displayName but no username, show displayName (FID: xxx)
+  if (user.displayName && user.displayName.trim() !== "") {
+    return fidToShow ? `${user.displayName.trim()} (FID: ${fidToShow})` : user.displayName.trim();
+  }
+  
+  // If we only have FID
+  if (fidToShow) {
+    return `FID: ${fidToShow}`;
+  }
+  
+  return "Anonymous";
+}
+
+/**
  * Determines if a user is a Farcaster user
  * @param user - The user object
  * @returns Boolean indicating if the user has Farcaster data

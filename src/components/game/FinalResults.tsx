@@ -85,12 +85,19 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
         const userForDisplay = farcasterUser || null
         
         // Use database function to insert score with validation
+        // Store username and FID separately for proper display
+        const playerName = farcasterUser?.username 
+          ? `@${farcasterUser.username}` 
+          : farcasterUser?.displayName || "Anonymous";
+        const playerFid = farcasterUser?.fid || null;
+        
         const { data, error } = await supabase.rpc("insert_score", {
-          p_player_name: formatUsernameForDisplay(farcasterUser) || "Anonymous",
-          p_identity: formatUsernameForDisplay(farcasterUser) || "anonymous",
+          p_player_name: playerName,
+          p_identity: playerFid ? `fid:${playerFid}` : playerName,
           p_score_value: totalScore,
           p_rounds: results.length,
           p_average_distance: Math.round(averageDistance),
+          p_fid: playerFid,
         })
 
         if (error) {

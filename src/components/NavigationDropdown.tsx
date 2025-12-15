@@ -14,7 +14,7 @@ import {
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
 import { useAccount, useConnect, useDisconnect, useSignMessage } from "wagmi"
 import { isAdmin, isAdminWallet } from "@/lib/admin/config"
-import { formatUsernameForDisplay } from "@/lib/utils/formatUsernameFarcaster"
+import { formatUsernameForDisplay, formatUsernameWithFid } from "@/lib/utils/formatUsernameFarcaster"
 import { useMemo } from "react"
 
 function short(addr?: string) {
@@ -121,7 +121,18 @@ export function NavigationDropdown() {
             <>
               <DropdownMenuSeparator />
               <div className="px-2 py-1.5 text-sm text-green-300">
-                {farcasterUser ? formatUsernameForDisplay(farcasterUser) : short(address)}
+                {farcasterUser ? (
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-semibold">
+                      {farcasterUser.username ? `@${farcasterUser.username}` : farcasterUser.displayName || "User"}
+                    </span>
+                    {farcasterUser.fid && (
+                      <span className="text-xs text-green-400/70 font-mono">FID: {farcasterUser.fid}</span>
+                    )}
+                  </div>
+                ) : (
+                  <span>{short(address)}</span>
+                )}
               </div>
               <DropdownMenuItem onClick={() => disconnect()} className="flex items-center gap-2">
                 Disconnect
@@ -132,8 +143,11 @@ export function NavigationDropdown() {
       </DropdownMenu>
 
       {user && (
-        <div className="px-2 py-1 rounded-md border border-green-500/40 text-green-300 text-xs font-mono bg-black/60">
-          @{user.username ?? user.fid}
+        <div className="px-2 py-1 rounded-md border border-green-500/40 text-green-300 text-xs font-mono bg-black/60 flex items-center gap-1.5">
+          <span>{user.username ? `@${user.username}` : `FID: ${user.fid}`}</span>
+          {user.username && user.fid && (
+            <span className="text-green-400/60 text-[10px]">#{user.fid}</span>
+          )}
         </div>
       )}
     </div>

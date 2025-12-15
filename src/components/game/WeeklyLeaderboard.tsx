@@ -5,7 +5,7 @@ import { Trophy, TrendingUp, Users, Calendar } from "lucide-react"
 // import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
-import { formatUsernameForDisplay, formatUsernameForCompactDisplay, isFarcasterUser, type FarcasterUser } from "@/lib/utils/formatUsernameFarcaster"
+import { formatUsernameForDisplay, formatUsernameForCompactDisplay, formatUsernameWithFid, isFarcasterUser, type FarcasterUser } from "@/lib/utils/formatUsernameFarcaster"
 import type { LeaderboardEntry } from "@/lib/game/types"
 
 interface WeeklyLeaderboardProps {
@@ -47,7 +47,6 @@ export default function WeeklyLeaderboard({
   limit = 10
 }: WeeklyLeaderboardProps) {
   const { user: farcasterUser } = useFarcasterUser()
-  const { toast } = useToast()
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -62,7 +61,7 @@ export default function WeeklyLeaderboard({
         
         let query = supabase
           .from('leaderboard_weekly')
-          .select('p_player_name, p_player_username, p_score_value, p_rounds, p_avg_distance, p_last_submit_date')
+          .select('p_player_name, p_player_username, p_score_value, p_rounds, p_avg_distance, p_last_submit_date, p_fid')
           .order('p_score_value', { ascending: false })
           .limit(limit)
         
@@ -90,11 +89,6 @@ export default function WeeklyLeaderboard({
         
         if (error) {
           console.error("Error fetching leaderboard:", error)
-          toast({
-            title: "Error",
-            description: "Failed to load leaderboard data",
-            variant: "destructive",
-          })
         } else if (data) {
           setLeaderboardData(data.map((row: any) => ({
             id: row.id,
@@ -103,15 +97,11 @@ export default function WeeklyLeaderboard({
             rounds: row.p_rounds || 0,
             timestamp: new Date(row.p_last_submit_date).getTime(),
             averageDistance: row.p_avg_distance || 0,
+            fid: row.p_fid || null,
           })))
         }
       } catch (err) {
         console.error("Error in fetchLeaderboardData:", err)
-        toast({
-          title: "Error",
-          description: "An unexpected error occurred",
-          variant: "destructive",
-        })
       } finally {
         setIsLoading(false)
       }
@@ -255,25 +245,21 @@ export default function WeeklyLeaderboard({
                         </div>
                         
                         <div className="flex-grow">
-                          <div className="flex items-center">
+                          <div className="flex items-center flex-wrap gap-1">
                             <div className="text-lg font-bold text-gray-900 truncate max-w-[180px]">
                               {entry.playerName}
                             </div>
+                            {(entry as any).fid && (
+                              <div className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-mono">
+                                FID: {(entry as any).fid}
+                              </div>
+                            )}
                             {isCurrentUserEntry && (
-                              <div className="ml-1 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                              <div className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
                                 YOU
                               </div>
                             )}
                           </div>
-                          
-                          {entry.playerName !== entry.playerName && (
-                            <div className="text-sm text-gray-500 truncate max-w-[120px]">
-                              {formatUsernameForDisplay({
-                                username: entry.playerName,
-                                displayName: entry.playerName
-                              })}
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>

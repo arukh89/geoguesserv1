@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trophy, Medal, Award, TrendingUp } from "lucide-react"
 import type { LeaderboardEntry } from "@/lib/game/types"
+import { formatUsernameWithFid } from "@/lib/utils/formatUsernameFarcaster"
 import { createClient } from "@/lib/supabase/client"
 
 interface LeaderboardProps {
@@ -40,6 +41,7 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
             rounds: row.rounds,
             timestamp: new Date(row.created_at).getTime(),
             averageDistance: row.average_distance,
+            fid: row.fid || null,
           }))
           setEntries(mapped)
         }
@@ -138,7 +140,14 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
                     <div className="flex-shrink-0">{getMedalIcon(rank)}</div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold truncate text-[var(--text)]">{entry.playerName}</div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold truncate text-[var(--text)]">{entry.playerName}</span>
+                        {(entry as any).fid && (
+                          <span className="text-xs bg-[rgba(0,255,65,0.15)] text-[var(--accent)] px-1.5 py-0.5 rounded font-mono">
+                            FID: {(entry as any).fid}
+                          </span>
+                        )}
+                      </div>
                       <div className="text-sm text-[color:rgba(151,255,151,0.8)]">
                         {entry.rounds} rounds • Avg {entry.averageDistance}km
                       </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import type * as React from "react"
+import * as React from "react"
 import * as DropdownPrimitive from "@radix-ui/react-dropdown-menu"
 import { CheckIcon, ChevronRightIcon } from "@radix-ui/react-icons"
 import { cn } from "@/lib/utils"
