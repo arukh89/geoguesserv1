@@ -124,7 +124,7 @@ export function WeeklyLeaderboard() {
               <Trophy className="h-5 w-5 text-yellow-500" />
               Weekly Leaderboard
             </CardTitle>
-            <CardDescription>Top 10 players win DEAFS tokens!</CardDescription>
+            <CardDescription>The top 10 on the leaderboard will receive GEO EXPLORER tokens (only for the top 50 DEAFS token holders — you can buy DEAFS on Mint Club).!</CardDescription>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="h-4 w-4" />
@@ -172,7 +172,7 @@ export function WeeklyLeaderboard() {
                       <span>Score: {score.score_value.toLocaleString()}</span>
                       {score.weekly_rank <= 10 && (
                         <span className="text-green-600 font-semibold">
-                          • Prize: {getRewardAmount(score.weekly_rank)} DEAFS
+                          • Prize: {getRewardAmount(score.weekly_rank)} GEO EXPLORER
                         </span>
                       )}
                     </div>
@@ -193,14 +193,14 @@ export function WeeklyLeaderboard() {
             <div className="text-center py-12 text-muted-foreground">
               <Trophy className="h-12 w-12 mx-auto mb-3 opacity-20" />
               <p className="font-medium">No scores yet this week</p>
-              <p className="text-sm mt-1">Be the first to play and win DEAFS tokens!</p>
+              <p className="text-sm mt-1">Be the first to play and win GEO EXPLORER tokens!</p>
             </div>
           )}
         </div>
 
         <div className="mt-6 p-4 rounded-lg bg-muted/30 border">
           <p className="text-sm text-muted-foreground">
-            <strong>Note:</strong> Weekly winners will receive DEAFS tokens directly from our admin team. Make sure
+            <strong>Note:</strong> Weekly winners will receive GEO EXPLORER tokens directly from our admin team. Make sure
             your wallet address is correct when playing!
           </p>
         </div>
