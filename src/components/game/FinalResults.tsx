@@ -74,11 +74,12 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
       try {
         const supabase = createClient()
 
-        const { error } = await supabase.from("scores").insert({
-          player_name: "You",
-          score_value: totalScore,
-          rounds: results.length,
-          average_distance: Math.round(averageDistance),
+        // Use database function to insert score with validation
+        const { error } = await supabase.rpc("insert_score", {
+          p_player_name: "You",
+          p_score_value: totalScore,
+          p_rounds: results.length,
+          p_average_distance: Math.round(averageDistance),
         })
 
         if (error) {

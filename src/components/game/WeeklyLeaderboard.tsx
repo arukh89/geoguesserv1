@@ -35,8 +35,8 @@ export function WeeklyLeaderboard() {
     const supabase = createBrowserClient()
     
     // DEBUG: Log Supabase configuration
-    console.log('[DEBUG] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://igcvudmczeanduochpyj.supabase.co')
-    console.log('[DEBUG] Supabase project ref from URL:', (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://igcvudmczeanduochpyj.supabase.co').replace('https://', '').replace('.supabase.co', ''))
+    console.log('[DEBUG] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ggjgxbqptiyuhioaoaru.supabase.co')
+    console.log('[DEBUG] Supabase project ref from URL:', (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ggjgxbqptiyuhioaoaru.supabase.co').replace('https://', '').replace('.supabase.co', ''))
 
     try {
       // Get current week's leaderboard
@@ -48,33 +48,30 @@ export function WeeklyLeaderboard() {
       endOfWeek.setDate(startOfWeek.getDate() + 6)
       endOfWeek.setHours(23, 59, 59, 999)
 
-      // Get top 10 scores for current week
+      // Get top 10 scores for current week using database function
       const { data: scores, error: scoresError } = await supabase
-        .from("scores")
-        .select("*")
-        .gte("created_at", startOfWeek.toISOString())
-        .lte("created_at", endOfWeek.toISOString())
-        .order("score_value", { ascending: false })
-        .limit(10)
+        .rpc("get_weekly_leaderboard", {
+          week_start_date: startOfWeek.toISOString().split("T")[0]
+        })
 
       if (scoresError) throw scoresError
 
-      // Add ranking to scores
-      const rankedScores: WeeklyScore[] = (scores || []).map((score, index) => ({
+      // Transform data to match WeeklyScore interface
+      const rankedScores: WeeklyScore[] = (scores || []).map((score: any) => ({
         id: score.id,
         identity: score.identity,
         score_value: score.score_value,
-        created_at: score.created_at,
-        week_start: startOfWeek.toISOString().split("T")[0],
-        week_end: endOfWeek.toISOString().split("T")[0],
-        weekly_rank: index + 1,
+        created_at: startOfWeek.toISOString(), // Using the week start as created_at for compatibility
+        week_start: score.week_start,
+        week_end: score.week_end,
+        weekly_rank: score.weekly_rank,
       }))
 
-      // Get admin rewards for this week
+      // Get admin rewards for this week using database function
       const { data: rewardsData, error: rewardsError } = await supabase
-        .from("admin_rewards")
-        .select("recipient_wallet, week_start, amount, tx_hash")
-        .eq("week_start", startOfWeek.toISOString().split("T")[0])
+        .rpc("get_weekly_rewards", {
+          week_start_date: startOfWeek.toISOString().split("T")[0]
+        })
 
       if (rewardsError) throw rewardsError
 

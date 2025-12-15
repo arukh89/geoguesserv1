@@ -19,6 +19,10 @@ yarn-error.log*
 # env files
 .env*
 
+# Specific env files for additional security
+.env.local
+vercel.env.local
+
 # vercel
 .vercel
 

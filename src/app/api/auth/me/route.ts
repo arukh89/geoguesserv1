@@ -10,11 +10,16 @@ export async function GET(req: NextRequest) {
   }
   const token = auth.slice(7);
   try {
-    const domain = req.nextUrl.origin;
+    // Use the production domain for verification
+    const domain = process.env.NODE_ENV === "production"
+      ? "https://geoguesserv1.vercel.app"
+      : req.nextUrl.origin;
+    
     const payload = await client.verifyJwt({ token, domain });
     // Minimal response; extend as needed (e.g., look up user in DB)
     return NextResponse.json({ fid: payload.sub });
   } catch (e) {
+    console.error("JWT verification failed:", e);
     return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }
 }
