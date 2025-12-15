@@ -37,11 +37,11 @@ export default function ResultsScreen({ result, onNext, isLastRound }: ResultsSc
         <Card className="shadow-2xl overflow-hidden mx-panel">
           <CardHeader className="border-b mx-border">
             <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
-              <CardTitle className="text-3xl flex items-center gap-3 text-[var(--accent)] font-bold">
+              <CardTitle className="text-3xl flex items-center gap-3 text-green-400 font-bold">
                 <Trophy className="w-8 h-8" />
                 Round {result.round} Results
               </CardTitle>
-              <CardDescription className="text-[var(--accent)] text-lg mt-2 font-semibold opacity-90">
+              <CardDescription className="text-green-400 text-lg mt-2 font-semibold opacity-90">
                 {performanceMessage}
               </CardDescription>
             </motion.div>
@@ -58,12 +58,12 @@ export default function ResultsScreen({ result, onNext, isLastRound }: ResultsSc
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.15)] border mx-border">
-                      <Target className="w-5 h-5 text-[var(--accent)]" />
+                      <Target className="w-5 h-5 text-green-400" />
                     </div>
-                    <div className="font-semibold text-[var(--accent)]">Location</div>
+                    <div className="font-semibold text-green-400">Location</div>
                   </div>
-                  <div className="text-2xl font-bold text-[var(--accent)]">{result.location.name}</div>
-                  <div className="text-sm text-[var(--accent)] mt-1 opacity-80">{result.location.country}</div>
+                  <div className="text-2xl font-bold text-green-400">{result.location.name}</div>
+                  <div className="text-sm text-green-400 mt-1 opacity-80">{result.location.country}</div>
                 </CardContent>
               </Card>
 
@@ -71,12 +71,12 @@ export default function ResultsScreen({ result, onNext, isLastRound }: ResultsSc
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.15)] border mx-border">
-                      <MapPin className="w-5 h-5 text-[var(--accent)]" />
+                      <MapPin className="w-5 h-5 text-green-400" />
                     </div>
-                    <div className="font-semibold text-[var(--accent)]">Distance</div>
+                    <div className="font-semibold text-green-400">Distance</div>
                   </div>
-                  <div className="text-2xl font-bold text-[var(--accent)]">{formatDistance(result.distance)}</div>
-                  <div className="text-sm text-[var(--accent)] mt-1 opacity-80">from actual location</div>
+                  <div className="text-2xl font-bold text-green-400">{formatDistance(result.distance)}</div>
+                  <div className="text-sm text-green-400 mt-1 opacity-80">from actual location</div>
                 </CardContent>
               </Card>
 
@@ -84,12 +84,12 @@ export default function ResultsScreen({ result, onNext, isLastRound }: ResultsSc
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.15)] border mx-border">
-                      <Trophy className="w-5 h-5 text-[var(--accent)]" />
+                      <Trophy className="w-5 h-5 text-green-400" />
                     </div>
-                    <div className="font-semibold text-[var(--accent)]">Score</div>
+                    <div className="font-semibold text-green-400">Score</div>
                   </div>
-                  <div className="text-2xl font-bold text-[var(--accent)]">{result.score.toLocaleString()}</div>
-                  <div className="text-sm text-[var(--accent)] mt-1 opacity-80">{scorePercentage.toFixed(1)}% accuracy</div>
+                  <div className="text-2xl font-bold text-green-400">{result.score.toLocaleString()}</div>
+                  <div className="text-sm text-green-400 mt-1 opacity-80">{scorePercentage.toFixed(1)}% accuracy</div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -130,7 +130,7 @@ export default function ResultsScreen({ result, onNext, isLastRound }: ResultsSc
                 style={{ left: `${actualX}%`, top: `${actualY}%` }}
               >
                 <div className="w-full h-full rounded-full bg-green-400 border-2 border-white shadow-lg shadow-green-500/50 animate-pulse" />
-                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs mx-panel px-2 py-1 rounded border mx-border text-[var(--accent)] font-semibold">
+                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs mx-panel px-2 py-1 rounded border mx-border text-green-400 font-semibold">
                   Actual
                 </div>
               </motion.div>
@@ -154,7 +154,7 @@ export default function ResultsScreen({ result, onNext, isLastRound }: ResultsSc
               <Button
                 onClick={onNext}
                 size="lg"
-                className="w-full h-14 text-lg font-semibold mx-panel hover:bg-[rgba(0,255,65,0.1)] transition-colors shadow-lg shadow-green-500/20 text-[var(--accent)]"
+                className="w-full h-14 text-lg font-semibold mx-panel hover:bg-[rgba(0,255,65,0.1)] transition-colors shadow-lg shadow-green-500/20 text-green-400"
               >
                 {isLastRound ? "View Final Results" : "Next Round"}
                 <ArrowRight className="w-5 h-5 ml-2" />

@@ -34,7 +34,7 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
         } else {
           const mapped: LeaderboardEntry[] = (data || []).map((row: any) => ({
             id: row.id,
-            playerName: row.player_name || "Anonymous",
+            playerName: row.player_name || row.identity || "Anonymous",
             score: row.score_value,
             rounds: row.rounds,
             timestamp: new Date(row.created_at).getTime(),

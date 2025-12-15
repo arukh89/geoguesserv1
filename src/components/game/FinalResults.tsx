@@ -9,6 +9,7 @@ import { formatDistance, calculateAverageDistance } from "@/lib/game/scoring"
 import Leaderboard from "./Leaderboard"
 import { useEffect, useRef, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { useFarcasterUser } from "@/hooks/useFarcasterUser"
 
 interface FinalResultsProps {
   results: RoundResult[]
@@ -18,6 +19,7 @@ interface FinalResultsProps {
 }
 
 export default function FinalResults({ results, totalScore, onPlayAgain, onShare }: FinalResultsProps) {
+  const { user: farcasterUser } = useFarcasterUser()
   const distances = results.map((r: RoundResult) => r.distance)
   const averageDistance = calculateAverageDistance(distances)
   const bestRound = results.reduce((best: RoundResult, current: RoundResult) =>
@@ -84,8 +86,8 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
         
         // Use database function to insert score with validation
         const { data, error } = await supabase.rpc("insert_score", {
-          p_player_name: user?.user_metadata?.username || "Anonymous",
-          p_identity: user?.user_metadata?.username || user?.id || "anonymous",
+          p_player_name: farcasterUser?.displayName || farcasterUser?.username || "Anonymous",
+          p_identity: farcasterUser?.username || `fid:${farcasterUser?.fid}` || "anonymous",
           p_score_value: totalScore,
           p_rounds: results.length,
           p_average_distance: Math.round(averageDistance),
@@ -122,28 +124,28 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
           <CardHeader className="text-center border-b mx-border">
             <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
               <div className="text-6xl mb-2">{performance.emoji}</div>
-              <CardTitle className="text-4xl mb-2 text-[var(--accent)]">{performance.title}!</CardTitle>
-              <CardDescription className="text-[var(--accent)] text-xl opacity-90">
+              <CardTitle className="text-4xl mb-2 text-green-400">{performance.title}!</CardTitle>
+              <CardDescription className="text-green-400 text-xl opacity-90">
                 {performance.message}
               </CardDescription>
             </motion.div>
           </CardHeader>
 
-          <CardContent className="p-6 space-y-6 text-[var(--text)]">
+          <CardContent className="p-6 space-y-6 text-green-200">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.3 }}
               className="text-center py-6 rounded-lg mx-panel"
             >
-              <div className="text-sm font-semibold text-[var(--accent)] mb-2 opacity-90">TOTAL SCORE</div>
+              <div className="text-sm font-semibold text-green-400 mb-2 opacity-90">TOTAL SCORE</div>
               <div
-                className="text-6xl font-bold text-[var(--accent)]"
+                className="text-6xl font-bold text-green-400"
                 style={{ filter: "drop-shadow(0 0 12px rgba(0,255,65,.6))" }}
               >
                 {totalScore.toLocaleString()}
               </div>
-              <div className="text-sm text-[var(--accent)] opacity-80 mt-2">
+              <div className="text-sm text-green-400 opacity-80 mt-2">
                 {accuracyPercentage.toFixed(1)}% accuracy
               </div>
             </motion.div>
@@ -183,11 +185,11 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.12)] border mx-border">
-                      <MapPin className="w-5 h-5 text-[var(--accent)]" />
+                      <MapPin className="w-5 h-5 text-green-400" />
                     </div>
-                    <div className="font-semibold text-[var(--accent)]">Avg Distance</div>
+                    <div className="font-semibold text-green-400">Avg Distance</div>
                   </div>
-                  <div className="text-2xl font-bold text-[var(--accent)]">{formatDistance(averageDistance)}</div>
+                  <div className="text-2xl font-bold text-green-400">{formatDistance(averageDistance)}</div>
                 </CardContent>
               </Card>
 
@@ -195,12 +197,12 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.12)] border mx-border">
-                      <Trophy className="w-5 h-5 text-[var(--accent)]" />
+                      <Trophy className="w-5 h-5 text-green-400" />
                     </div>
-                    <div className="font-semibold text-[var(--accent)]">Best Round</div>
+                    <div className="font-semibold text-green-400">Best Round</div>
                   </div>
-                  <div className="text-2xl font-bold text-[var(--accent)]">{bestRound.score.toLocaleString()}</div>
-                  <div className="text-sm text-[var(--accent)] opacity-80 mt-1">{bestRound.location.name}</div>
+                  <div className="text-2xl font-bold text-green-400">{bestRound.score.toLocaleString()}</div>
+                  <div className="text-sm text-green-400 opacity-80 mt-1">{bestRound.location.name}</div>
                 </CardContent>
               </Card>
 
@@ -208,12 +210,12 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 rounded-lg bg-[rgba(0,255,65,0.12)] border mx-border">
-                      <Target className="w-5 h-5 text-[var(--accent)]" />
+                      <Target className="w-5 h-5 text-green-400" />
                     </div>
-                    <div className="font-semibold text-[var(--accent)]">Rounds</div>
+                    <div className="font-semibold text-green-400">Rounds</div>
                   </div>
-                  <div className="text-2xl font-bold text-[var(--accent)]">{results.length}</div>
-                  <div className="text-sm text-[var(--accent)] opacity-80 mt-1">completed</div>
+                  <div className="text-2xl font-bold text-green-400">{results.length}</div>
+                  <div className="text-sm text-green-400 opacity-80 mt-1">completed</div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -221,7 +223,7 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.7 }}>
               <Card className="mx-panel">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-[var(--accent)]">
+                  <CardTitle className="flex items-center gap-2 text-green-400">
                     <TrendingUp className="w-5 h-5" />
                     Round Breakdown
                   </CardTitle>
@@ -231,19 +233,19 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
                     {results.map((result: RoundResult, index: number) => (
                       <div key={result.round} className="flex items-center justify-between p-3 mx-panel">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 text-[var(--bg)] bg-[var(--accent)] rounded-full flex items-center justify-center text-sm font-bold">
+                          <div className="w-8 h-8 text-[var(--bg)] bg-green-400 rounded-full flex items-center justify-center text-sm font-bold">
                             {index + 1}
                           </div>
                           <div>
-                            <div className="font-semibold text-[var(--accent)]">{result.location.name}</div>
-                            <div className="text-sm text-[var(--accent)] opacity-80">
+                            <div className="font-semibold text-green-400">{result.location.name}</div>
+                            <div className="text-sm text-green-400 opacity-80">
                               {formatDistance(result.distance)} away
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-bold text-[var(--accent)]">{result.score.toLocaleString()}</div>
-                          <div className="text-xs text-[var(--accent)] opacity-70">points</div>
+                          <div className="font-bold text-green-400">{result.score.toLocaleString()}</div>
+                          <div className="text-xs text-green-400 opacity-70">points</div>
                         </div>
                       </div>
                     ))}
