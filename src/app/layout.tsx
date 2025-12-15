@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
     version: "next",
     imageUrl: `https://geoguesserv1.vercel.app/icon.png`,
     button: {
-      title: "Play Game",
+      title: "Lets Explore",
       action: {
         type: "launch_frame",
         name: "Farcaster Geo Explorer",
@@ -61,11 +61,12 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [`https://geoguesserv1.vercel.app/heroImageUrl.png`],
     },
     other: {
+      "base:app_id": "693fbb22d77c069a945bdef2",
       "fc:miniapp": JSON.stringify({
         version: "next",
         imageUrl: `https://geoguesserv1.vercel.app/heroImageUrl.png`,
         button: {
-          title: "Play Game",
+          title: "Lets Explore",
           action: {
             type: "launch_frame",
             name: "Farcaster Geo Explorer",
