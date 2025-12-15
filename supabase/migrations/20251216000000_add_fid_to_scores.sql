@@ -4,19 +4,22 @@ ALTER TABLE public.scores ADD COLUMN IF NOT EXISTS fid INTEGER;
 -- Create index for FID lookups
 CREATE INDEX IF NOT EXISTS idx_scores_fid ON public.scores(fid);
 
--- Update insert_score function to accept FID parameter
+-- Drop existing functions first
+DROP FUNCTION IF EXISTS public.insert_score(TEXT, TEXT, INTEGER, INTEGER, INTEGER);
+DROP FUNCTION IF EXISTS public.get_top_leaderboard(INTEGER);
+
+-- Create insert_score function with FID parameter
 CREATE OR REPLACE FUNCTION public.insert_score(
   p_player_name TEXT DEFAULT NULL,
   p_identity TEXT DEFAULT NULL,
-  p_score_value INTEGER,
-  p_rounds INTEGER,
-  p_average_distance INTEGER,
+  p_score_value INTEGER DEFAULT 0,
+  p_rounds INTEGER DEFAULT 1,
+  p_average_distance INTEGER DEFAULT 0,
   p_fid INTEGER DEFAULT NULL
 ) RETURNS UUID AS $$
 DECLARE
   new_score_id UUID;
 BEGIN
-  -- Validate input
   IF p_score_value < 0 THEN
     RAISE EXCEPTION 'Score cannot be negative';
   END IF;
@@ -29,7 +32,6 @@ BEGIN
     RAISE EXCEPTION 'Average distance cannot be negative';
   END IF;
   
-  -- Insert the score with FID
   INSERT INTO public.scores (
     player_name,
     identity,
@@ -50,8 +52,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create view for weekly leaderboard with FID
-CREATE OR REPLACE VIEW public.leaderboard_weekly AS
+-- Create view for weekly leaderboard with FID (security_invoker for RLS)
+CREATE OR REPLACE VIEW public.leaderboard_weekly
+WITH (security_invoker = true)
+AS
 SELECT 
   s.id,
   s.player_name as p_player_name,
@@ -67,7 +71,7 @@ WHERE s.created_at >= date_trunc('week', CURRENT_DATE)
   AND s.created_at < date_trunc('week', CURRENT_DATE) + interval '7 days'
 ORDER BY s.score_value DESC;
 
--- Update get_top_leaderboard function to include FID
+-- Create get_top_leaderboard function with FID
 CREATE OR REPLACE FUNCTION public.get_top_leaderboard(
   limit_count INTEGER DEFAULT 10
 ) RETURNS TABLE (
