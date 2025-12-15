@@ -1,0 +1,1 @@
+"postgresql://postgres:PASSWORD@db.ggjgxbqptiyuhioaoaru.supabase.co:5432/postgres"

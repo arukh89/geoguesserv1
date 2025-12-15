@@ -19,24 +19,22 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
     const supabase = createClient()
     
     // DEBUG: Log Supabase configuration
-    console.log('[DEBUG] Leaderboard - Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://igcvudmczeanduochpyj.supabase.co')
-    console.log('[DEBUG] Leaderboard - Supabase project ref from URL:', (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://igcvudmczeanduochpyj.supabase.co').replace('https://', '').replace('.supabase.co', ''))
+    console.log('[DEBUG] Leaderboard - Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ggjgxbqptiyuhioaoaru.supabase.co')
+    console.log('[DEBUG] Leaderboard - Supabase project ref from URL:', (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ggjgxbqptiyuhioaoaru.supabase.co').replace('https://', '').replace('.supabase.co', ''))
 
     const fetchScores = async () => {
       try {
+        // Use the database function to get top leaderboard
         const { data, error } = await supabase
-          .from("scores")
-          .select("*")
-          .order("score_value", { ascending: false })
-          .limit(10)
+          .rpc("get_top_leaderboard", { limit_count: 10 })
 
         if (error) {
           console.error("Failed to fetch scores from Supabase:", error)
           setEntries([])
         } else {
-          const mapped: LeaderboardEntry[] = (data || []).map((row) => ({
+          const mapped: LeaderboardEntry[] = (data || []).map((row: any) => ({
             id: row.id,
-            playerName: row.player_name,
+            playerName: row.player_name || "Anonymous",
             score: row.score_value,
             rounds: row.rounds,
             timestamp: new Date(row.created_at).getTime(),
