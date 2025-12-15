@@ -1,0 +1,40 @@
+﻿{
+    "accountAssociation":  {
+                               "header":  "eyJmaWQiOjI1MDcwNCwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDA5RDAyRDI1RDBEMDgyZjdGMkUwNGI0ODM4Y0VmZTI3MWIyZGFCMDkifQ",
+                               "payload":  "eyJkb21haW4iOiJnZW9ndWVzc2VydjEudmVyY2VsLmFwcCJ9",
+                               "signature":  "QTqbTQQFqC+ViqDDVjfQJ7UxJ6G1xmaYJ9L3322PDFhtn8Ugx0Vngm6Tjm9Pscc2v3/MMtCwtrKbqfSyel2xLRs="
+                           },
+    "miniapp":  {
+                    "version":  "1",
+                    "name":  "Farcaster Geo Explorer",
+                    "iconUrl":  "https://geoguesserv1.vercel.app/icon.png",
+                    "homeUrl":  "https://geoguesserv1.vercel.app/",
+                    "buttonTitle": "Lets Explore",
+                    "splashImageUrl":  "https://geoguesserv1.vercel.app/splash.png",
+                    "splashBackgroundColor":  "#001a0f",
+                    "subtitle":  "Test your geography skills",
+                    "description":  "Explore the world through street view panoramas. Guess locations, compete on leaderboards, and earn rewards on Base blockchain.",
+                    "primaryCategory":  "games",
+                    "tags":  [
+                                 "geography",
+                                 "game",
+                                 "exploration",
+                                 "blockchain"
+                             ],
+                    "requiredChains":  [
+                                           "eip155:8453"
+                                       ],
+                    "requiredCapabilities":  [
+                                                 "wallet.getEthereumProvider"
+                                             ],
+                    "imageUrl":  "https://geoguesserv1.vercel.app/imageUrl.png",
+                    "ogImageUrl":  "https://geoguesserv1.vercel.app/heroImageUrl.png",
+                    "heroImageUrl":  "https://geoguesserv1.vercel.app/heroImageUrl.png",
+                    "screenshotUrls":  [
+                                           "https://geoguesserv1.vercel.app/screenshotUrls.png"
+                                       ]
+                },
+    "baseBuilder":  {
+                        "ownerAddress":  "0xAFf0244070a126525D45D334F2e3A3670F1A7CD1"
+                    }
+}
