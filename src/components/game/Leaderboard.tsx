@@ -13,33 +13,28 @@ interface LeaderboardProps {
 }
 
 export default function Leaderboard({ currentScore }: LeaderboardProps) {
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([])
+  const [entries, setEntries] = useState<(LeaderboardEntry & { fid?: number })[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const supabase = createClient()
-    
-    // DEBUG: Log Supabase configuration
-    console.log('[DEBUG] Leaderboard - Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ggjgxbqptiyuhioaoaru.supabase.co')
-    console.log('[DEBUG] Leaderboard - Supabase project ref from URL:', (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ggjgxbqptiyuhioaoaru.supabase.co').replace('https://', '').replace('.supabase.co', ''))
 
     const fetchScores = async () => {
       try {
-        // Use the database function to get top leaderboard
-        const { data, error } = await supabase
-          .rpc("get_top_leaderboard", { limit_count: 10 })
+        const { data, error } = await supabase.rpc("get_top_leaderboard", { limit_count: 10 })
 
         if (error) {
           console.error("Failed to fetch scores from Supabase:", error)
           setEntries([])
         } else {
-          const mapped: LeaderboardEntry[] = (data || []).map((row: any) => ({
+          const mapped = (data || []).map((row: any) => ({
             id: row.id,
             playerName: row.player_name || row.identity || "Anonymous",
             score: row.score_value,
             rounds: row.rounds,
             timestamp: new Date(row.created_at).getTime(),
             averageDistance: row.average_distance,
+            fid: row.fid || null,
           }))
           setEntries(mapped)
         }
@@ -53,50 +48,26 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
 
     fetchScores()
 
-    // Set up real-time subscription for leaderboard updates
     const channel = supabase
       .channel("scores_changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "scores",
-        },
-        () => {
-          // Refetch when data changes
-          fetchScores()
-        },
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "scores" }, () => fetchScores())
       .subscribe()
 
-    return () => {
-      channel.unsubscribe()
-    }
+    return () => { channel.unsubscribe() }
   }, [])
 
-  const sortedEntries = useMemo(() => {
-    return [...entries].sort((a, b) => b.score - a.score).slice(0, 10)
-  }, [entries])
+  const sortedEntries = useMemo(() => [...entries].sort((a, b) => b.score - a.score).slice(0, 10), [entries])
 
   const getMedalIcon = (rank: number) => {
     switch (rank) {
-      case 1:
-        return <Trophy className="w-6 h-6 text-[var(--accent)]" />
-      case 2:
-        return <Medal className="w-6 h-6 text-[color:rgba(151,255,151,0.85)]" />
-      case 3:
-        return <Award className="w-6 h-6 text-[var(--accent)]" />
-      default:
-        return (
-          <div className="w-6 h-6 flex items-center justify-center text-[color:rgba(151,255,151,0.7)] font-semibold">
-            {rank}
-          </div>
-        )
+      case 1: return <Trophy className="w-6 h-6 text-[var(--accent)]" />
+      case 2: return <Medal className="w-6 h-6 text-[color:rgba(151,255,151,0.85)]" />
+      case 3: return <Award className="w-6 h-6 text-[var(--accent)]" />
+      default: return <div className="w-6 h-6 flex items-center justify-center text-[color:rgba(151,255,151,0.7)] font-semibold">{rank}</div>
     }
   }
 
-  const getRankColor = (rank: number): string => "bg-[rgba(0,255,65,0.06)] border-[rgba(0,255,65,0.25)]"
+  const getRankColor = () => "bg-[rgba(0,255,65,0.06)] border-[rgba(0,255,65,0.25)]"
 
   return (
     <Card className="mx-panel border mx-border shadow-[var(--shadow)] relative z-10">
@@ -120,7 +91,7 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
           </div>
         ) : (
           <div className="space-y-3">
-            {sortedEntries.map((entry: LeaderboardEntry, index: number) => {
+            {sortedEntries.map((entry, index) => {
               const rank = index + 1
               const isCurrentScore = currentScore && entry.score === currentScore
 
@@ -130,20 +101,23 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className={`p-4 rounded-lg border ${getRankColor(rank)} ${
-                    isCurrentScore ? "ring-2 ring-[var(--accent)]" : ""
-                  }`}
+                  className={`p-4 rounded-lg border ${getRankColor()} ${isCurrentScore ? "ring-2 ring-[var(--accent)]" : ""}`}
                 >
                   <div className="flex items-center gap-4">
                     <div className="flex-shrink-0">{getMedalIcon(rank)}</div>
-
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold truncate text-[var(--text)]">{entry.playerName}</div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold truncate text-[var(--text)]">{entry.playerName}</span>
+                        {entry.fid && (
+                          <span className="text-xs bg-[rgba(0,255,65,0.15)] text-[var(--accent)] px-1.5 py-0.5 rounded font-mono">
+                            FID: {entry.fid}
+                          </span>
+                        )}
+                      </div>
                       <div className="text-sm text-[color:rgba(151,255,151,0.8)]">
                         {entry.rounds} rounds • Avg {entry.averageDistance}km
                       </div>
                     </div>
-
                     <div className="text-right">
                       <div className="text-xl font-bold text-[var(--accent)]">{entry.score.toLocaleString()}</div>
                       <div className="text-xs text-[color:rgba(151,255,151,0.7)]">points</div>
