@@ -41,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: "Farcaster Geo Explorer",
       description: "Explore the world. Test your geography skills. Share your scores on Farcaster!",
-      url: https://geoguesserv1.vercel.app/,
+      url: "https://geoguesserv1.vercel.app",
       siteName: "Farcaster Geo Explorer",
       images: [
         {
