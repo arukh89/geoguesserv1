@@ -247,3 +247,4 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
     </div>
   )
 }
+

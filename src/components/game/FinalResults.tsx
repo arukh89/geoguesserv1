@@ -89,6 +89,7 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
       }
     }
     submit()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

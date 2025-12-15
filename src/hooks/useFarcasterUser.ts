@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 
@@ -82,13 +82,8 @@ export function useFarcasterUser() {
         const { sdk } = await import("@farcaster/miniapp-sdk")
 
         // Fast path: existing context
-        try {
-          const context = await sdk.context
-          if (context?.user?.fid != null) {
-            resolved = context.user
-          }
-        } catch {
-          // Continue if context cannot be accessed
+        if (sdk?.context?.user?.fid != null) {
+          resolved = sdk.context.user
         }
 
         // Try to become ready, but don't hang forever
@@ -108,15 +103,8 @@ export function useFarcasterUser() {
           if (typeof (sdk.actions as any).getUser === "function") {
             try { resolved = await (sdk.actions as any).getUser() } catch {}
           }
-          if (!resolved) {
-            try {
-              const context = await sdk.context
-              if (context?.user) {
-                resolved = context.user
-              }
-            } catch {
-              // Continue if context cannot be accessed
-            }
+          if (!resolved && sdk.context?.user) {
+            resolved = sdk.context.user
           }
         }
       } catch {

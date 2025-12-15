@@ -33,8 +33,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Farcaster Geo Explorer",
     description: "Explore the world. Test your geography skills. Share your scores on Farcaster!",
+ 
     icons: {
       icon: `${baseUrl}/icon.png`,
+      apple: `${baseUrl}/icon.png`,
     },
     openGraph: {
       title: "Farcaster Geo Explorer",
@@ -59,7 +61,20 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [`${baseUrl}/heroImageUrl.png`],
     },
     other: {
-      "fc:miniapp": JSON.stringify(miniApp),
+      "fc:miniapp": JSON.stringify({
+        version: "next",
+        imageUrl: `${baseUrl}/heroImageUrl.png`,
+        button: {
+          title: "Play Game",
+          action: {
+            type: "launch_frame",
+            name: "Farcaster Geo Explorer",
+            url: baseUrl,
+            splashImageUrl: `${baseUrl}/splash.png`,
+            splashBackgroundColor: "#001a0f",
+          },
+        },
+      }),
     },
   }
 }

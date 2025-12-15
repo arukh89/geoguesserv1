@@ -9,14 +9,10 @@ export default function MatrixRain({ className = "" }: { className?: string }) {
 
   useEffect(() => {
     if (!settings.rain) return
-
     const canvas = canvasRef.current
     if (!canvas) return
-
     const ctx = canvas.getContext("2d")
     if (!ctx) return
-
-    console.log("[v0] MatrixRain: Initializing canvas animation")
 
     let raf = 0
     let width = 0
@@ -34,7 +30,6 @@ export default function MatrixRain({ className = "" }: { className?: string }) {
       columns = Math.floor(canvas.width / (14 * dpr))
       drops = Array.from({ length: columns }, () => (Math.random() * -100) | 0)
       ctx.scale(dpr, dpr)
-      console.log("[v0] MatrixRain: Canvas resized", { width, height, columns })
     }
 
     const step = () => {
@@ -65,16 +60,12 @@ export default function MatrixRain({ className = "" }: { className?: string }) {
     const ro = new ResizeObserver(onResize)
     ro.observe(canvas)
     window.addEventListener("resize", onResize)
-
     return () => {
-      console.log("[v0] MatrixRain: Cleaning up")
       cancelAnimationFrame(raf)
       ro.disconnect()
       window.removeEventListener("resize", onResize)
     }
   }, [settings.rain])
-
-  if (!settings.rain) return null
 
   return (
     <canvas
@@ -84,7 +75,7 @@ export default function MatrixRain({ className = "" }: { className?: string }) {
         opacity: 0.14,
         width: "100vw",
         height: "100vh",
-        zIndex: 1,
+        zIndex: 9,
       }}
       aria-hidden
     />

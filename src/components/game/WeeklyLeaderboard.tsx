@@ -33,6 +33,10 @@ export function WeeklyLeaderboard() {
 
   const loadWeeklyLeaderboard = async () => {
     const supabase = createBrowserClient()
+    
+    // DEBUG: Log Supabase configuration
+    console.log('[DEBUG] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://igcvudmczeanduochpyj.supabase.co')
+    console.log('[DEBUG] Supabase project ref from URL:', (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://igcvudmczeanduochpyj.supabase.co').replace('https://', '').replace('.supabase.co', ''))
 
     try {
       // Get current week's leaderboard

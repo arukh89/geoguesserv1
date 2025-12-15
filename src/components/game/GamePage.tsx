@@ -24,36 +24,36 @@ export function GamePage() {
   const [showMap, setShowMap] = useState(false)
   // Countdown timer per round
   useEffect(() => {
-    if (gameState !== "playing" || typeof timeLimit !== "number") return
+    if (gameState !== "playing" || typeof timeLimit !== "number") return;
     const id = setInterval(() => {
       setTimeLeft((prev) => {
-        if (typeof prev !== "number") return prev
-        const next = prev > 0 ? prev - 1 : 0
+        if (typeof prev !== "number") return prev;
+        const next = prev > 0 ? prev - 1 : 0;
         if (next <= 0) {
-          clearInterval(id)
-          const location = locations[currentRound]
+          clearInterval(id);
+          const location = locations[currentRound];
           if (location) {
-            const guessLat = -location.lat
-            const guessLng = location.lng >= 0 ? location.lng - 180 : location.lng + 180
-            const distance = calculateDistance(location.lat, location.lng, guessLat, guessLng)
+            const guessLat = -location.lat;
+            const guessLng = location.lng >= 0 ? location.lng - 180 : location.lng + 180;
+            const distance = calculateDistance(location.lat, location.lng, guessLat, guessLng);
             const roundResult: RoundResult = {
               location,
               guess: { lat: guessLat, lng: guessLng },
               distance,
               score: 0,
               round: currentRound + 1,
-            }
-            setResults((prev) => [...prev, roundResult])
-            setShowMap(false)
-            setGameState("results")
+            };
+            setResults((prev) => [...prev, roundResult]);
+            setShowMap(false);
+            setGameState("results");
           }
         }
-        return next
-      })
-    }, 1000)
-    return () => clearInterval(id)
-  }, [gameState, currentRound, timeLimit, locations])
-  const startGame = (mode: GameMode, durationSec?: number) => {
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [gameState, currentRound, timeLimit, locations]);
+const startGame = (mode: GameMode, durationSec?: number) => {
     const newLocations = getRandomLocations(5)
     setLocations(newLocations)
     setCurrentRound(0)
@@ -119,7 +119,7 @@ export function GamePage() {
     const totalScore = results.reduce((sum, r) => sum + r.score, 0)
 
     return (
-      <div className="relative w-full h-[calc(100vh-3.5rem)] bg-black/95 overflow-hidden">
+      <div className="relative w-full h-[calc(100vh-3.5rem)] bg-black overflow-hidden">
         <GameHeader
           currentRound={currentRound + 1}
           totalRounds={locations.length}
@@ -131,7 +131,7 @@ export function GamePage() {
           <PanoramaViewer
             imageUrl={location.panoramaUrl}
             shot={
-              location.provider && location.provider !== 'static'
+              location.provider
                 ? {
                     provider: location.provider,
                     imageId: location.imageId,
@@ -164,7 +164,7 @@ export function GamePage() {
               onClick={() => setShowMap(false)}
               className="absolute top-4 right-4 z-[300]"
               variant="secondary"
-              size="sm"
+              size="icon"
             >
               <X className="w-5 h-5" />
             </Button>

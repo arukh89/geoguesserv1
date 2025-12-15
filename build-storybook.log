@@ -1,0 +1,513 @@
+> mini-app@0.1.0 build-storybook C:\Users\UserBQ\Downloads\mini app\geo guesser
+> storybook build "--output-dir=C:\\Users\\UserBQ\\AppData\\Local\\Temp\\chromatic--18336-hLkxVUoAbM2M"
+
+
+[90m┌[39m  Building storybook v10.1.7
+[90m│[39m
+[32m◇[39m  Cleaning outputDir:
+[90m│[39m  [36m../../../AppData/Local/Temp/chromatic--18336-hLkxVUoAbM2M[39m
+[90m│[39m
+[32m◇[39m  Loading presets
+[90m│[39m
+[32m◇[39m  Building manager..
+[90m│[39m
+[34m●[39m  Building preview..
+[90m│[39m
+[33m▲[39m  No story files found for the specified pattern: [34msrc\**\*.mdx[39m
+[90m│[39m
+[34m●[39m  Copying static files: [36mpublic[39m at
+[90m│[39m  [36m..\..\..\AppData\Local\Temp\chromatic--18336-hLkxVUoAbM2M[39m
+[90m│[39m  [43mVite[49m [36mvite v7.2.7 [32mbuilding client environment for production...[36m[39m
+[90m│[39m  [43mVite[49m transforming...
+[90m│[39m
+[33m▲[39m  [43mVite[49m [33msrc/components/game/HomeScreen.tsx (1:0): Error when using[39m
+[90m│[39m  [33msourcemap for reporting an error: Can't resolve original location of[39m
+[90m│[39m  [33merror.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m [33msrc/components/game/HomeScreen.tsx (1:0): Module level directives[39m
+[90m│[39m  [33mcause errors when bundled, "use client" in[39m
+[90m│[39m  [33m"src/components/game/HomeScreen.tsx" was ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/AnimatePresence/PresenceChild.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/AnimatePresence/PresenceChild.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/LayoutGroup/index.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/LayoutGroup/index.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/LazyMotion/index.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/LazyMotion/index.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/MotionConfig/index.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/MotionConfig/index.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/motion/utils/use-visual-state.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/motion/utils/use-visual-state.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-force-update.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-force-update.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-isomorphic-effect.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-isomorphic-effect.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-unmount-effect.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-unmount-effect.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/dom/features-animation.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/dom/features-animation.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/dom/features-max.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/dom/features-max.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/dom/features-min.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/dom/features-min.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-motion-value-event.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-motion-value-event.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-motion-template.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-motion-template.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-motion-value.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-motion-value.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-scroll.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-scroll.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-spring.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-spring.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-time.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-time.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-transform.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-transform.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-velocity.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-velocity.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-will-change/index.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-will-change/index.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/reduced-motion/use-reduced-motion-config.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/reduced-motion/use-reduced-motion-config.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/animation/hooks/use-animate.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/animation/hooks/use-animate.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/animation/hooks/use-animate-style.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/animation/hooks/use-animate-style.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/animation/hooks/use-animation.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/animation/hooks/use-animation.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/AnimatePresence/use-presence.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/AnimatePresence/use-presence.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/AnimatePresence/use-presence-data.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/AnimatePresence/use-presence-data.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/events/use-dom-event.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/events/use-dom-event.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-animation-frame.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-animation-frame.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-cycle.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-cycle.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-in-view.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-in-view.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-instant-transition.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-instant-transition.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-page-in-view.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-page-in-view.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/LayoutGroupContext.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/LayoutGroupContext.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/MotionConfigContext.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/MotionConfigContext.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/MotionContext/index.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/MotionContext/index.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/PresenceContext.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/PresenceContext.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/SwitchLayoutGroupContext.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/SwitchLayoutGroupContext.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/animation/hooks/use-animated-state.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/animation/hooks/use-animated-state.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/AnimateSharedLayout.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/AnimateSharedLayout.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/DeprecatedLayoutGroupContext.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/DeprecatedLayoutGroupContext.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-inverted-scale.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-inverted-scale.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/AnimatePresence/index.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/AnimatePresence/index.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/reduced-motion/use-reduced-motion.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/reduced-motion/use-reduced-motion.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-constant.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-constant.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/LazyContext.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/LazyContext.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-is-mounted.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/utils/use-is-mounted.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-combine-values.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-combine-values.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-computed.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/value/use-computed.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/Reorder/Item.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/Reorder/Item.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/Reorder/Group.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/components/Reorder/Group.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/motion/features/layout/MeasureLayout.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/motion/features/layout/MeasureLayout.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/ReorderContext.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/ReorderContext.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/motion/index.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/motion/index.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/MotionContext/create.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/context/MotionContext/create.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/dom/use-render.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/dom/use-render.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/html/use-html-visual-state.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/html/use-html-visual-state.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/svg/use-svg-visual-state.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/svg/use-svg-visual-state.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/motion/utils/use-motion-ref.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/motion/utils/use-motion-ref.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/motion/utils/use-visual-element.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/motion/utils/use-visual-element.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/html/use-props.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/html/use-props.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m
+[33m▲[39m  [43mVite[49m
+[90m│[39m  [33mnode_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/svg/use-props.mjs[39m
+[90m│[39m  [33m(1:0): Module level directives cause errors when bundled, "use client"[39m
+[90m│[39m  [33min[39m
+[90m│[39m  [33m"node_modules/.pnpm/framer-motion@12.23.26_reac_1bca0ede25177b91e2f036b55e5d9b33/node_modules/framer-motion/dist/es/render/svg/use-props.mjs"[39m
+[90m│[39m  [33mwas ignored.[39m
+[90m│[39m  [43mVite[49m [32m✓[39m 2326 modules transformed.
+[90m│[39m  [43mVite[49m rendering chunks...
+[90m│[39m  [43mVite[49m computing gzip size...
+[90m│[39m  [43mVite[49m
+[90m│[39m  [2m../../../AppData/Local/Temp/chromatic--18336-hLkxVUoAbM2M/[22m[32miframe.html[39m[1m[2m[22m
+[90m│[39m  [2m18.16 kB[22m[1m[22m[2m │ gzip:   5.07 kB[22m
+[90m│[39m  [43mVite[49m
+[90m│[39m  [2m../../../AppData/Local/Temp/chromatic--18336-hLkxVUoAbM2M/[22m[35massets/iframe-XsQXdbwF.css[39m[1m[2m[22m
+[90m│[39m  [2m0.06 kB[22m[1m[22m[2m │ gzip:   0.08 kB[22m
+[90m│[39m  [43mVite[49m
+[90m│[39m  [2m../../../AppData/Local/Temp/chromatic--18336-hLkxVUoAbM2M/[22m[36massets/button-rpps0sOM.js[39m[1m[2m[22m
+[90m│[39m  [2m0.68 kB[22m[1m[22m[2m │ gzip:   0.34 kB[22m
+[90m│[39m  [43mVite[49m
+[90m│[39m  [2m../../../AppData/Local/Temp/chromatic--18336-hLkxVUoAbM2M/[22m[36massets/button.stories-C0aidRs8.js[39m[1m[2m[22m
+[90m│[39m  [2m1.09 kB[22m[1m[22m[2m │ gzip:   0.44 kB[22m
+[90m│[39m  [43mVite[49m
+[90m│[39m  [2m../../../AppData/Local/Temp/chromatic--18336-hLkxVUoAbM2M/[22m[36massets/preload-helper-PPVm8Dsz.js[39m[1m[2m[22m
+[90m│[39m  [2m1.23 kB[22m[1m[22m[2m │ gzip:   0.71 kB[22m
+[90m│[39m  [43mVite[49m
+[90m│[39m  [2m../../../AppData/Local/Temp/chromatic--18336-hLkxVUoAbM2M/[22m[36mvite-inject-mocker-entry.js[39m[1m[2m[22m
+[90m│[39m  [2m28.30 kB[22m[1m[22m[2m │ gzip:   9.84 kB[22m
+[90m│[39m  [43mVite[49m
+[90m│[39m  [2m../../../AppData/Local/Temp/chromatic--18336-hLkxVUoAbM2M/[22m[36massets/matchers-DMFSMG2O-HJu_DfWo.js[39m[1m[2m[22m
+[90m│[39m  [2m29.23 kB[22m[1m[22m[2m │ gzip:  10.06 kB[22m
+[90m│[39m  [43mVite[49m
+[90m│[39m  [2m../../../AppData/Local/Temp/chromatic--18336-hLkxVUoAbM2M/[22m[36massets/HomeScreen.stories-fcA1n1tx.js[39m[1m[2m[22m
+[90m│[39m  [2m121.16 kB[22m[1m[22m[2m │ gzip:  39.94 kB[22m
+[90m│[39m  [43mVite[49m
+[90m│[39m  [2m../../../AppData/Local/Temp/chromatic--18336-hLkxVUoAbM2M/[22m[36massets/react-18-mzcLBMt_.js[39m[1m[2m[22m
+[90m│[39m  [2m174.74 kB[22m[1m[22m[2m │ gzip:  55.34 kB[22m
+[90m│[39m  [43mVite[49m
+[90m│[39m  [2m../../../AppData/Local/Temp/chromatic--18336-hLkxVUoAbM2M/[22m[36massets/axe-Bjvck9su.js[39m[1m[33m[39m
+[90m│[39m  [33m578.28 kB[39m[22m[2m │ gzip: 159.21 kB[22m
+[90m│[39m  [43mVite[49m
+[90m│[39m  [2m../../../AppData/Local/Temp/chromatic--18336-hLkxVUoAbM2M/[22m[36massets/iframe-COOEqkAz.js[39m
+[90m│[39m  [36m[39m[1m[33m1,233.04 kB[39m[22m[2m │ gzip: 350.39 kB[22m
+[90m│[39m
+[33m▲[39m  [43mVite[49m[33m
+[90m│[39m  (!) Some chunks are larger than 500 kB after minification. Consider:
+[90m│[39m  - Using dynamic import() to code-split the application
+[90m│[39m  - Use build.rollupOptions.output.manualChunks to improve chunking:
+[90m│[39m  ]8;;https://rollupjs.org/configuration-options/#output-manualchunkshttps://rollupjs.org/configuration-options/#output-manualchunks]8;;
+[90m│[39m  - Adjust chunk size limit for this warning via
+[90m│[39m  build.chunkSizeWarningLimit.[39m
+[90m│[39m  [43mVite[49m [32m✓ built in 24.74s[39m
+[90m│[39m
+[32m◇[39m  Output directory:
+[90m│[39m  C:/Users/UserBQ/AppData/Local/Temp/chromatic--18336-hLkxVUoAbM2M
+[90m│[39m
+[90m└[39m  Storybook build completed successfully

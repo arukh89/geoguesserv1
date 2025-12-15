@@ -17,6 +17,10 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
 
   useEffect(() => {
     const supabase = createClient()
+    
+    // DEBUG: Log Supabase configuration
+    console.log('[DEBUG] Leaderboard - Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://igcvudmczeanduochpyj.supabase.co')
+    console.log('[DEBUG] Leaderboard - Supabase project ref from URL:', (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://igcvudmczeanduochpyj.supabase.co').replace('https://', '').replace('.supabase.co', ''))
 
     const fetchScores = async () => {
       try {
