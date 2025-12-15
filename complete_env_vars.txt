@@ -1,0 +1,55 @@
+# ============================================================================
+# COMPREHENSIVE ENVIRONMENT VARIABLES FILE
+# ============================================================================
+# IMPORTANT: How to get your PostgreSQL password from Supabase Dashboard
+# ============================================================================
+# 1. Go to https://app.supabase.com
+# 2. Select your project "geoguesserv1"
+# 3. Navigate to Settings → Database
+# 4. Look for the "Connection string" or "Database Password" section
+# 5. Click "Show" or "Reveal" to see the actual password
+# 6. Replace all instances of "PASSWORD" in this file with the actual password
+# ============================================================================
+# NOTE: Some values marked as "PASSWORD" are placeholders and need to be
+# replaced with actual values from your Supabase dashboard as instructed above.
+# ============================================================================
+
+# Supabase Configuration (Client-side)
+NEXT_PUBLIC_SUPABASE_URL=https://ggjgxbqptiyuhioaoaru.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZmpkZHJyY3JlZnZhdWpraXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MTUzNTIsImV4cCI6MjA4MTI5MTM1Mn0.KT9vctAUeexwyw3NfvCQrWUANh9HW2V8VQLqGVidkms
+
+# Supabase Configuration (Server-side)
+SUPABASE_URL=https://ggjgxbqptiyuhioaoaru.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZmpkZHJyY3JlZnZhdWpraXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MTUzNTIsImV4cCI6MjA4MTI5MTM1Mn0.KT9vctAUeexwyw3NfvCQrWUANh9HW2V8VQLqGVidkms
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnY3Z1ZG1jemVhbmR1b2NocHlqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTY1ODgwOCwiZXhwIjoyMDgxMjM0ODA4fQ.IpDCXeWIO2SQmEJuyVTy_t3CxcbuJd1fyn5kfrdSdyA
+SUPABASE_SECRET_KEY=sb_secret_HTQN-lHAhGAZEBrhdjceQA_29r1-4wE
+SUPABASE_JWT_SECRET=3qdHeSD2hNnBs1BMuYV3Rsgj2jIrK+K8dLTvkdVpjxCJtz1Nicl+n0g43WB62ZZ3boOg7PH/MOofJJTOVyvjNg==
+
+# PostgreSQL Database Configuration
+# NOTE: Replace "PASSWORD" with your actual PostgreSQL password from Supabase dashboard
+POSTGRES_URL=postgresql://postgres:PASSWORD@db.ggjgxbqptiyuhioaoaru.supabase.co:5432/postgres
+POSTGRES_PRISMA_URL=postgresql://postgres:PASSWORD@db.ggjgxbqptiyuhioaoaru.supabase.co:5432/postgres?pgbouncer=true&connect_timeout=15
+POSTGRES_URL_NON_POOLING=postgresql://postgres:PASSWORD@db.ggjgxbqptiyuhioaoaru.supabase.co:5432/postgres
+POSTGRES_USER=postgres
+# NOTE: Replace "PASSWORD" with your actual PostgreSQL password
+POSTGRES_PASSWORD=PASSWORD
+POSTGRES_HOST=db.ggjgxbqptiyuhioaoaru.supabase.co
+POSTGRES_DATABASE=postgres
+
+# Mapillary API Configuration
+MAPILLARY_SERVER_TOKEN=MLY|26076414925278553|9c1536fe1708aa39daf9437e233a95e3
+NEXT_PUBLIC_MAPILLARY_TOKEN=MLY|26076414925278553|cabaa59e54c22e36f987eabae633df89
+MAPILLARY_CLIENT_SECRET=MLY|26076414925278553|cabaa59e54c22e36f987eabae633df89
+MAPILLARY_CLIENT_ID=25246864601630618
+
+# Farcaster API Configuration
+FARCASTER_API_KEY=wc_secret_13ae99f53a4f0874277616da7b10bddf6d01a2ea5eac4d8c6380e877_9b6b2830
+
+# Neynar API Configuration
+NEYNAR_API_KEY=643049C2-0132-4043-995C-55F749670AD5
+
+# Web3/Smart Contract Configuration
+NEXT_PUBLIC_MOONSHOT_CONTRACT_ADDRESS=0x9d7ff2e9ba89502776248acd6cbcb6734049fb07
+
+# Application URLs
+NEXT_PUBLIC_BASE_URL=https://geoguesserv1.vercel.app

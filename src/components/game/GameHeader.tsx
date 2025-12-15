@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { Trophy, MapPin, Timer, ArrowLeft } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { MatrixToggle } from "@/components/matrix/MatrixToggle"

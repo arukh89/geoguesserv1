@@ -1,3 +1,5 @@
+import React from "react"
+
 export function Attribution({ provider }: { provider?: 'mapillary'|'kartaview' }) {
   return (
     <div className="text-[10px] text-neutral-500">

@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 export default function MatrixLoader({ label = "Loading...", className = "" }: { label?: string; className?: string }) {
   return (
     <div className={`flex flex-col items-center justify-center gap-3 text-[var(--text)] ${className}`}>

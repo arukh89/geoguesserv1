@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { useMatrix } from "@/components/matrix/MatrixProvider"
 
 export function MatrixToggle() {

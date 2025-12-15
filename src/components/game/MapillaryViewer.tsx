@@ -1,4 +1,5 @@
 "use client"
+import React from "react"
 import { Viewer } from "mapillary-js"
 import { useEffect, useRef, useState } from "react"
 import { getMapillaryToken } from "@/lib/actions/mapillary"

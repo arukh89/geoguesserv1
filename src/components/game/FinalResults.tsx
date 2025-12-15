@@ -1,5 +1,4 @@
-"use client"
-
+import React from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,6 +9,7 @@ import Leaderboard from "./Leaderboard"
 import { useEffect, useRef, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
+import { formatUsernameForDisplay, formatUsernameForCompactDisplay, isFarcasterUser, type FarcasterUser } from "@/lib/utils/formatUsernameFarcaster"
 
 interface FinalResultsProps {
   results: RoundResult[]
@@ -32,31 +32,31 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
     if (percentage >= 90) {
       return {
         title: "Legendary",
-        message: "You're a geography master!",
+        message: "You're a geography master! Based on your score, you earned 0 FART tokens!",
         emoji: "🌟",
       }
     } else if (percentage >= 75) {
       return {
         title: "Excellent",
-        message: "Impressive knowledge of the world!",
+        message: "Impressive knowledge of the world! Based on your score, you earned 0 FART tokens!",
         emoji: "🎯",
       }
     } else if (percentage >= 60) {
       return {
         title: "Great",
-        message: "You know your way around!",
+        message: "You know your way around! Based on your score, you earned 0 FART tokens.",
         emoji: "👏",
       }
     } else if (percentage >= 40) {
       return {
         title: "Good",
-        message: "Nice effort, keep exploring!",
+        message: "Nice effort, keep exploring! Based on your score, you earned 0 FART tokens.",
         emoji: "👍",
       }
     } else {
       return {
         title: "Keep Learning",
-        message: "Every explorer starts somewhere!",
+        message: "Every explorer starts somewhere! Based on your score, you earned 0 FART tokens.",
         emoji: "🗺️",
       }
     }
@@ -82,12 +82,12 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
         const supabase = createClient()
 
         // Get the current user session for identity
-        const { data: { user } } = await supabase.auth.getUser()
+        const userForDisplay = farcasterUser || null
         
         // Use database function to insert score with validation
         const { data, error } = await supabase.rpc("insert_score", {
-          p_player_name: farcasterUser?.displayName || farcasterUser?.username || "Anonymous",
-          p_identity: farcasterUser?.username || `fid:${farcasterUser?.fid}` || "anonymous",
+          p_player_name: formatUsernameForDisplay(farcasterUser) || "Anonymous",
+          p_identity: formatUsernameForDisplay(farcasterUser) || "anonymous",
           p_score_value: totalScore,
           p_rounds: results.length,
           p_average_distance: Math.round(averageDistance),
@@ -108,7 +108,6 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
         setSubmissionMessage(`Failed to submit score: ${err instanceof Error ? err.message : 'Unknown error'}`)
       }
     }
-    submit()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -121,11 +120,11 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
         className="max-w-6xl mx-auto space-y-6"
       >
         <Card className="shadow-2xl overflow-hidden mx-panel">
-          <CardHeader className="text-center border-b mx-border">
+          <CardHeader className="border-b mx-border text-center bg-[rgba(0,255,65,0.06)]">
             <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
               <div className="text-6xl mb-2">{performance.emoji}</div>
               <CardTitle className="text-4xl mb-2 text-green-400">{performance.title}!</CardTitle>
-              <CardDescription className="text-green-400 text-xl opacity-90">
+              <CardDescription className="text-xl text-green-400 opacity-90">
                 {performance.message}
               </CardDescription>
             </motion.div>
@@ -154,6 +153,7 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
                 className={`p-4 rounded-lg border-2 flex items-center gap-3 ${
                   submissionStatus === 'success'
                     ? 'border-green-500/50 bg-green-500/10'
@@ -167,7 +167,7 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
                 ) : submissionStatus === 'error' ? (
                   <AlertCircle className="w-5 h-5 text-red-400" />
                 ) : (
-                  <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-blue-400/30 border-t-transparent rounded-full animate-spin" />
                 )}
                 <div className="text-sm font-medium">
                   {submissionMessage}
@@ -220,7 +220,11 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
               </Card>
             </motion.div>
 
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.7 }}>
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.7 }}
+            >
               <Card className="mx-panel">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-green-400">
@@ -233,11 +237,11 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
                     {results.map((result: RoundResult, index: number) => (
                       <div key={result.round} className="flex items-center justify-between p-3 mx-panel">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 text-[var(--bg)] bg-green-400 rounded-full flex items-center justify-center text-sm font-bold">
+                          <div className="w-8 h-8 bg-green-400 rounded-full flex items-center justify-center text-[var(--bg)] font-bold text-sm">
                             {index + 1}
                           </div>
                           <div>
-                            <div className="font-semibold text-green-400">{result.location.name}</div>
+                            <div className="font-semibold text-green-400 truncate">{result.location.name}</div>
                             <div className="text-sm text-green-400 opacity-80">
                               {formatDistance(result.distance)} away
                             </div>
