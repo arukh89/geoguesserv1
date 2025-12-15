@@ -3,11 +3,11 @@
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trophy, MapPin, Target, Share2, RotateCcw, TrendingUp } from "lucide-react"
+import { Trophy, MapPin, Target, Share2, RotateCcw, TrendingUp, CheckCircle, AlertCircle } from "lucide-react"
 import type { RoundResult } from "@/lib/game/types"
 import { formatDistance, calculateAverageDistance } from "@/lib/game/scoring"
 import Leaderboard from "./Leaderboard"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 
 interface FinalResultsProps {
@@ -63,6 +63,8 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
   const performance = getPerformanceLevel(accuracyPercentage)
 
   const submittedRef = useRef(false)
+  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
+  const [submissionMessage, setSubmissionMessage] = useState<string>('')
 
   useEffect(() => {
     if (submittedRef.current) {
@@ -72,11 +74,18 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
 
     const submit = async () => {
       try {
+        setSubmissionStatus('submitting')
+        setSubmissionMessage('Submitting your score...')
+        
         const supabase = createClient()
 
+        // Get the current user session for identity
+        const { data: { user } } = await supabase.auth.getUser()
+        
         // Use database function to insert score with validation
-        const { error } = await supabase.rpc("insert_score", {
-          p_player_name: "You",
+        const { data, error } = await supabase.rpc("insert_score", {
+          p_player_name: user?.user_metadata?.username || "Anonymous",
+          p_identity: user?.user_metadata?.username || user?.id || "anonymous",
           p_score_value: totalScore,
           p_rounds: results.length,
           p_average_distance: Math.round(averageDistance),
@@ -84,9 +93,17 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
 
         if (error) {
           console.error("Failed to submit score to Supabase:", error)
+          setSubmissionStatus('error')
+          setSubmissionMessage(`Failed to submit score: ${error.message}`)
+        } else {
+          console.log("Score submitted successfully:", data)
+          setSubmissionStatus('success')
+          setSubmissionMessage('Score submitted successfully!')
         }
       } catch (err) {
         console.error("Failed to submit score to Supabase:", err)
+        setSubmissionStatus('error')
+        setSubmissionMessage(`Failed to submit score: ${err instanceof Error ? err.message : 'Unknown error'}`)
       }
     }
     submit()
@@ -130,6 +147,31 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
                 {accuracyPercentage.toFixed(1)}% accuracy
               </div>
             </motion.div>
+
+            {submissionStatus !== 'idle' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`p-4 rounded-lg border-2 flex items-center gap-3 ${
+                  submissionStatus === 'success'
+                    ? 'border-green-500/50 bg-green-500/10'
+                    : submissionStatus === 'error'
+                    ? 'border-red-500/50 bg-red-500/10'
+                    : 'border-blue-500/50 bg-blue-500/10'
+                }`}
+              >
+                {submissionStatus === 'success' ? (
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                ) : submissionStatus === 'error' ? (
+                  <AlertCircle className="w-5 h-5 text-red-400" />
+                ) : (
+                  <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                )}
+                <div className="text-sm font-medium">
+                  {submissionMessage}
+                </div>
+              </motion.div>
+            )}
 
             <motion.div
               initial={{ y: 20, opacity: 0 }}
