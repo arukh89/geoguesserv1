@@ -9,7 +9,7 @@
                     "name":  "Farcaster Geo Explorer",
                     "iconUrl":  "https://geoguesserv1.vercel.app/icon.png",
                     "homeUrl":  "https://geoguesserv1.vercel.app/",
-                    "buttonTitle": "Open Farcaster Geo Explorer",
+                    "buttonTitle": "Lets Explore",
                     "splashImageUrl":  "https://geoguesserv1.vercel.app/splash.png",
                     "splashBackgroundColor":  "#001a0f",
                     "subtitle":  "Test your geography skills",
