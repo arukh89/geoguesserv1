@@ -42,7 +42,9 @@ interface AdminPanelProps {
 
 interface LeaderboardEntry {
   id: string
-  identity: string
+  player_name: string | null
+  identity: string | null
+  fid: number | null
   score_value: number
   weekly_rank: number
   week_start: string
@@ -87,7 +89,9 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
 
       const entries: LeaderboardEntry[] = data.map((entry, idx) => ({
         id: entry.id,
+        player_name: entry.player_name,
         identity: entry.identity,
+        fid: entry.fid,
         score_value: entry.score_value || 0,
         weekly_rank: idx + 1,
         week_start: weekStart.toISOString().split("T")[0],
@@ -302,7 +306,19 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="font-mono text-sm text-green-300 truncate">{entry.identity}</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-green-300 font-medium">
+                    {entry.player_name || "Anonymous"}
+                  </span>
+                  {entry.fid && (
+                    <span className="text-xs bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded">
+                      FID: {entry.fid}
+                    </span>
+                  )}
+                </div>
+                <div className="font-mono text-xs text-green-400/60 truncate">
+                  {entry.identity || "No wallet"}
+                </div>
                 <div className="text-sm text-green-400/80">Score: {entry.score_value.toLocaleString()}</div>
               </div>
 
@@ -311,7 +327,13 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
                   <Label htmlFor={`amount-${entry.id}`} className="sr-only">Amount</Label>
                   <Input id={`amount-${entry.id}`} type="number" value={amounts[entry.id] || ""} onChange={(e) => setAmounts((prev) => ({ ...prev, [entry.id]: e.target.value }))} placeholder="Amount" disabled={sending[entry.id]} className="text-right" />
                 </div>
-                <Button onClick={() => handleSendTokens(entry)} disabled={sending[entry.id] || !amounts[entry.id]} size="sm" className="gap-2">
+                <Button 
+                  onClick={() => handleSendTokens(entry)} 
+                  disabled={sending[entry.id] || !amounts[entry.id] || !entry.identity || !/^0x[a-fA-F0-9]{40}$/.test(entry.identity)} 
+                  size="sm" 
+                  className="gap-2"
+                  title={!entry.identity ? "No wallet address" : !/^0x[a-fA-F0-9]{40}$/.test(entry.identity) ? "Invalid wallet address" : "Send tokens"}
+                >
                   {sending[entry.id] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   Send
                 </Button>
@@ -325,7 +347,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete this score?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will permanently delete the score for {entry.identity}. This action cannot be undone.
+                        This will permanently delete the score for {entry.player_name || entry.identity || "this user"}. This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
