@@ -59,14 +59,18 @@ export default function WeeklyLeaderboard({
         setIsLoading(true)
         const supabase = createClient()
         
+        console.log("[WeeklyLeaderboard] Fetching data from leaderboard_weekly...")
+        
         const { data, error } = await supabase
           .from('leaderboard_weekly')
           .select('id, p_player_name, p_player_username, p_score_value, p_rounds, p_avg_distance, p_last_submit_date, p_fid')
           .order('p_score_value', { ascending: false })
           .limit(limit)
 
+        console.log("[WeeklyLeaderboard] Response:", { data, error })
+
         if (error) {
-          console.error("Error fetching leaderboard:", error)
+          console.error("[WeeklyLeaderboard] Error fetching leaderboard:", error)
           return
         }
         

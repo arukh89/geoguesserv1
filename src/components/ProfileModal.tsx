@@ -41,56 +41,55 @@ export default function ProfileModal({ isOpen, onClose, user }: ProfileModalProp
     try {
       const supabase = createClient()
       
-      // Get current week start
+      // Get current week start (Monday) - match PostgreSQL date_trunc('week')
       const now = new Date()
+      const dayOfWeek = now.getDay()
+      // getDay() returns 0 for Sunday, 1 for Monday, etc.
+      // We want Monday as start, so: if Sunday (0), go back 6 days; otherwise go back (dayOfWeek - 1) days
+      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
       const weekStart = new Date(now)
-      weekStart.setDate(now.getDate() - now.getDay())
+      weekStart.setDate(now.getDate() - daysToMonday)
       weekStart.setHours(0, 0, 0, 0)
 
-      // Build search conditions - search by FID, username, or identity
-      const searchConditions: string[] = []
-      
-      if (user.fid) {
-        searchConditions.push(`fid.eq.${user.fid}`)
-        searchConditions.push(`identity.eq.fid:${user.fid}`)
-      }
-      if (user.username) {
-        searchConditions.push(`player_name.eq.@${user.username}`)
-        searchConditions.push(`identity.eq.@${user.username}`)
-      }
+      console.log("[ProfileModal] Loading history for user:", { fid: user.fid, username: user.username, weekStart: weekStart.toISOString() })
 
       let data: WeeklyScore[] = []
       
-      if (searchConditions.length > 0) {
-        // Try to fetch by FID first
-        if (user.fid) {
-          const { data: fidData, error: fidError } = await supabase
-            .from("scores")
-            .select("id, score_value, rounds, average_distance, created_at")
-            .eq("fid", user.fid)
-            .gte("created_at", weekStart.toISOString())
-            .order("created_at", { ascending: false })
-          
-          if (!fidError && fidData && fidData.length > 0) {
-            data = fidData
-          }
-        }
+      // Try to fetch by FID first
+      if (user.fid) {
+        console.log("[ProfileModal] Searching by FID:", user.fid)
+        const { data: fidData, error: fidError } = await supabase
+          .from("scores")
+          .select("id, score_value, rounds, average_distance, created_at")
+          .eq("fid", user.fid)
+          .gte("created_at", weekStart.toISOString())
+          .order("created_at", { ascending: false })
         
-        // If no results by FID, try by username/identity
-        if (data.length === 0 && user.username) {
-          const { data: nameData, error: nameError } = await supabase
-            .from("scores")
-            .select("id, score_value, rounds, average_distance, created_at")
-            .or(`player_name.eq.@${user.username},identity.eq.@${user.username}`)
-            .gte("created_at", weekStart.toISOString())
-            .order("created_at", { ascending: false })
-          
-          if (!nameError && nameData) {
-            data = nameData
-          }
+        console.log("[ProfileModal] FID search result:", { fidData, fidError })
+        
+        if (!fidError && fidData && fidData.length > 0) {
+          data = fidData
+        }
+      }
+      
+      // If no results by FID, try by username/identity
+      if (data.length === 0 && user.username) {
+        console.log("[ProfileModal] Searching by username:", user.username)
+        const { data: nameData, error: nameError } = await supabase
+          .from("scores")
+          .select("id, score_value, rounds, average_distance, created_at")
+          .or(`player_name.eq.@${user.username},identity.eq.@${user.username}`)
+          .gte("created_at", weekStart.toISOString())
+          .order("created_at", { ascending: false })
+        
+        console.log("[ProfileModal] Username search result:", { nameData, nameError })
+        
+        if (!nameError && nameData) {
+          data = nameData
         }
       }
 
+      console.log("[ProfileModal] Final data:", data)
       setWeeklyScores(data)
       
       // Calculate stats
@@ -102,7 +101,7 @@ export default function ProfileModal({ isOpen, onClose, user }: ProfileModalProp
       setTotalRounds(rounds)
       setBestScore(best)
     } catch (err) {
-      console.error("Error loading history:", err)
+      console.error("[ProfileModal] Error loading history:", err)
     } finally {
       setLoading(false)
     }
