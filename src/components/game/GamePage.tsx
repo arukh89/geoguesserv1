@@ -224,14 +224,41 @@ export function GamePage() {
     setShowMap(false)
   }
 
-  const shareResults = () => {
+  const shareResults = async () => {
     const totalScore = results.reduce((sum, r) => sum + r.score, 0)
-    const text = `I scored ${totalScore.toLocaleString()} points in Matrix GeoGuesser! Can you beat my score?`
-    if (navigator.share) {
-      navigator.share({ text, url: window.location.href }).catch(() => {})
-    } else {
-      navigator.clipboard.writeText(text).then(() => alert("Score copied to clipboard!"))
+    const appUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://geoguesserv1.vercel.app"
+    
+    // Cast text with score and call to action
+    const castText = `🌍 I scored ${totalScore.toLocaleString()} points in Farcaster Geo Explorer!
+
+🎮 Play, explore the world, and earn rewards!
+🏆 Top 10 weekly players win GEO tokens!
+
+Can you beat my score? 👇
+
+${appUrl}
+
+by @ukhy89`
+
+    try {
+      // Try Farcaster MiniApp SDK first (for Warpcast)
+      const { sdk } = await import("@farcaster/miniapp-sdk")
+      
+      // Use composeCast to open Warpcast composer with pre-filled text
+      if (sdk?.actions?.composeCast) {
+        await sdk.actions.composeCast({
+          text: castText,
+          embeds: [appUrl],
+        })
+        return
+      }
+    } catch (e) {
+      console.log("[Share] Farcaster SDK not available, using fallback")
     }
+
+    // Fallback: Open Warpcast compose URL
+    const warpcastUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(castText)}&embeds[]=${encodeURIComponent(appUrl)}`
+    window.open(warpcastUrl, "_blank")
   }
 
   // Show loading screen while initializing or fetching locations
