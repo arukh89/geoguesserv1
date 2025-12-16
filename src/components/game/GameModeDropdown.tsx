@@ -24,16 +24,16 @@ export default function GameModeDropdown({ onStart }: GameModeDropdownProps) {
   ]
 
   return (
-    <div className="fixed left-4 top-1/2 -translate-y-1/2 z-50">
+    <div className="fixed left-2 sm:left-4 top-20 sm:top-1/2 sm:-translate-y-1/2 z-50">
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-3 rounded-lg bg-black/80 backdrop-filter backdrop-blur-lg border-2 border-green-500/50 hover:bg-green-900/20 hover:border-green-400 transition-colors shadow-lg shadow-green-500/20"
+        className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-3 rounded-lg bg-black/80 backdrop-filter backdrop-blur-lg border-2 border-green-500/50 hover:bg-green-900/20 hover:border-green-400 transition-colors shadow-lg shadow-green-500/20"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        <Gamepad2 className="w-5 h-5 text-green-400" />
-        <span className="font-semibold text-green-300">Game Mode</span>
-        <ChevronDown className={`w-4 h-4 text-green-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        <Gamepad2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
+        <span className="font-semibold text-green-300 text-sm sm:text-base">Menu</span>
+        <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-green-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </motion.button>
 
       <AnimatePresence>
@@ -43,7 +43,7 @@ export default function GameModeDropdown({ onStart }: GameModeDropdownProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="mt-2 w-64 rounded-lg bg-black/90 backdrop-filter backdrop-blur-lg border-2 border-green-500/50 overflow-hidden shadow-xl shadow-green-500/20"
+            className="mt-2 w-56 sm:w-64 rounded-lg bg-black/90 backdrop-filter backdrop-blur-lg border-2 border-green-500/50 overflow-hidden shadow-xl shadow-green-500/20"
           >
             <div className="p-2 space-y-1">
               {modes.map((mode) => (
