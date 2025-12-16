@@ -9,7 +9,18 @@ import { createBrowserClient } from "@/lib/supabase/client"
 import { useSendTransaction, useAccount, useWalletClient } from "wagmi"
 import { parseEther, encodeFunctionData } from "viem"
 import { toast } from "sonner"
-import { Loader2, Send } from "lucide-react"
+import { Loader2, Send, Trash2, AlertTriangle } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const GEO_EXPLORER_ABI = [
   {
@@ -43,6 +54,8 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
   const [loading, setLoading] = useState(true)
   const [amounts, setAmounts] = useState<Record<string, string>>({})
   const [sending, setSending] = useState<Record<string, boolean>>({})
+  const [deleting, setDeleting] = useState<Record<string, boolean>>({})
+  const [clearingAll, setClearingAll] = useState(false)
 
   const { isConnected } = useAccount()
   const { data: walletClient } = useWalletClient()
@@ -193,6 +206,48 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
     }
   }
 
+  async function handleDeleteScore(entryId: string) {
+    try {
+      setDeleting((prev) => ({ ...prev, [entryId]: true }))
+      
+      const { error } = await supabase
+        .from("scores")
+        .delete()
+        .eq("id", entryId)
+      
+      if (error) throw error
+      
+      toast.success("Score deleted successfully")
+      loadWeeklyLeaderboard()
+    } catch (error) {
+      console.error("Failed to delete score:", error)
+      toast.error("Failed to delete score")
+    } finally {
+      setDeleting((prev) => ({ ...prev, [entryId]: false }))
+    }
+  }
+
+  async function handleClearAllScores() {
+    try {
+      setClearingAll(true)
+      
+      const { error } = await supabase
+        .from("scores")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000") // Delete all rows
+      
+      if (error) throw error
+      
+      toast.success("All leaderboard data cleared successfully")
+      loadWeeklyLeaderboard()
+    } catch (error) {
+      console.error("Failed to clear leaderboard:", error)
+      toast.error("Failed to clear leaderboard")
+    } finally {
+      setClearingAll(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
@@ -208,7 +263,34 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
           <h2 className="text-2xl font-bold text-green-400">Admin Panel</h2>
           <p className="text-sm text-green-400/80 mt-1">Send Geo Explorer tokens to top 10 weekly winners</p>
         </div>
-        <Button onClick={loadWeeklyLeaderboard} variant="secondary" size="sm">Refresh</Button>
+        <div className="flex gap-2">
+          <Button onClick={loadWeeklyLeaderboard} variant="secondary" size="sm">Refresh</Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm" disabled={clearingAll || leaderboard.length === 0}>
+                {clearingAll ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                Clear All
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                  Clear All Leaderboard Data?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete ALL scores from the leaderboard. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClearAllScores} className="bg-red-600 hover:bg-red-700">
+                  Yes, Clear All
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -233,6 +315,27 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
                   {sending[entry.id] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   Send
                 </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="sm" disabled={deleting[entry.id]} className="text-red-400 hover:text-red-300 hover:bg-red-900/20">
+                      {deleting[entry.id] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this score?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete the score for {entry.identity}. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDeleteScore(entry.id)} className="bg-red-600 hover:bg-red-700">
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           </Card>

@@ -53,9 +53,10 @@ CREATE INDEX IF NOT EXISTS idx_admin_rewards_recipient_wallet ON public.admin_re
 ALTER TABLE public.scores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admin_rewards ENABLE ROW LEVEL SECURITY;
 
--- RLS policies: allow public read and inserts
+-- RLS policies: allow public read, inserts, and deletes
 CREATE POLICY IF NOT EXISTS scores_select_public ON public.scores FOR SELECT USING (true);
 CREATE POLICY IF NOT EXISTS scores_insert_public ON public.scores FOR INSERT WITH CHECK (true);
+CREATE POLICY IF NOT EXISTS scores_delete_public ON public.scores FOR DELETE USING (true);
 CREATE POLICY IF NOT EXISTS admin_rewards_select_public ON public.admin_rewards FOR SELECT USING (true);
 CREATE POLICY IF NOT EXISTS admin_rewards_insert_public ON public.admin_rewards FOR INSERT WITH CHECK (true);
 
