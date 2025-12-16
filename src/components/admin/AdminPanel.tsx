@@ -11,7 +11,7 @@ import { parseEther, encodeFunctionData } from "viem"
 import { toast } from "sonner"
 import { Loader2, Send } from "lucide-react"
 
-const MOONSHOT_ABI = [
+const GEO_EXPLORER_ABI = [
   {
     inputs: [
       { name: "to", type: "address" },
@@ -125,11 +125,11 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
     try {
       setSending((prev) => ({ ...prev, [entry.id]: true }))
 
-      const contractAddress = (process.env.NEXT_PUBLIC_MOONSHOT_CONTRACT_ADDRESS as `0x${string}`) ||
+      const contractAddress = (process.env.NEXT_PUBLIC_GEO_EXPLORER_CONTRACT_ADDRESS as `0x${string}`) ||
         "0x9d7ff2e9ba89502776248acd6cbcb6734049fb07"
 
       const data = encodeFunctionData({
-        abi: MOONSHOT_ABI,
+        abi: GEO_EXPLORER_ABI,
         functionName: "transfer",
         args: [walletAddress as `0x${string}`, parseEther(amount)],
       })
@@ -152,7 +152,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
               week_end: entry.week_end,
               tx_hash: hash,
             })
-            toast.success(`Successfully sent ${amount} MOONSHOT to ${walletAddress}`)
+            toast.success(`Successfully sent ${amount} Geo Explorer to ${walletAddress}`)
             setSending((prev) => ({ ...prev, [entry.id]: false }))
             return
           }
@@ -176,7 +176,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
               week_end: entry.week_end,
               tx_hash: hash,
             })
-            toast.success(`Successfully sent ${amount} MOONSHOT to ${walletAddress}`)
+            toast.success(`Successfully sent ${amount} Geo Explorer to ${walletAddress}`)
             setSending((prev) => ({ ...prev, [entry.id]: false }))
           },
           onError: (error) => {
@@ -205,8 +205,8 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[var(--text)]">Admin Panel</h2>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">Send MOONSHOT tokens to top 10 weekly winners</p>
+          <h2 className="text-2xl font-bold text-green-400">Admin Panel</h2>
+          <p className="text-sm text-green-400/80 mt-1">Send Geo Explorer tokens to top 10 weekly winners</p>
         </div>
         <Button onClick={loadWeeklyLeaderboard} variant="secondary" size="sm">Refresh</Button>
       </div>
@@ -220,8 +220,8 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="font-mono text-sm text-[var(--text)] truncate">{entry.identity}</div>
-                <div className="text-sm text-[var(--text-secondary)]">Score: {entry.score_value.toLocaleString()}</div>
+                <div className="font-mono text-sm text-green-300 truncate">{entry.identity}</div>
+                <div className="text-sm text-green-400/80">Score: {entry.score_value.toLocaleString()}</div>
               </div>
 
               <div className="flex items-center gap-2">

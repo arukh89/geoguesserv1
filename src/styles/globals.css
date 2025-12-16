@@ -7,17 +7,17 @@
 /* Matrix theme CSS variables */
 :root {
   --background: oklch(0 0 0);
-  --foreground: oklch(0.75 0.2 142);
+  --foreground: oklch(0.8 0.2 142);
   --card: oklch(0.08 0.02 142);
-  --card-foreground: oklch(0.75 0.2 142);
+  --card-foreground: oklch(0.8 0.2 142);
   --popover: oklch(0.08 0.02 142);
-  --popover-foreground: oklch(0.75 0.2 142);
-  --primary: oklch(0.7 0.25 142);
+  --popover-foreground: oklch(0.8 0.2 142);
+  --primary: oklch(0.75 0.25 142);
   --primary-foreground: oklch(0 0 0);
   --secondary: oklch(0.15 0.05 142);
-  --secondary-foreground: oklch(0.75 0.2 142);
+  --secondary-foreground: oklch(0.8 0.2 142);
   --muted: oklch(0.15 0.05 142);
-  --muted-foreground: oklch(0.5 0.15 142);
+  --muted-foreground: oklch(0.7 0.18 142);
   --accent: oklch(0.2 0.08 142);
   --accent-foreground: oklch(0.75 0.2 142);
   --destructive: oklch(0.577 0.245 27.325);
@@ -51,17 +51,17 @@
 
 .dark {
   --background: oklch(0 0 0);
-  --foreground: oklch(0.75 0.2 142);
+  --foreground: oklch(0.8 0.2 142);
   --card: oklch(0.08 0.02 142);
-  --card-foreground: oklch(0.75 0.2 142);
+  --card-foreground: oklch(0.8 0.2 142);
   --popover: oklch(0.08 0.02 142);
-  --popover-foreground: oklch(0.75 0.2 142);
-  --primary: oklch(0.7 0.25 142);
+  --popover-foreground: oklch(0.8 0.2 142);
+  --primary: oklch(0.75 0.25 142);
   --primary-foreground: oklch(0 0 0);
   --secondary: oklch(0.15 0.05 142);
-  --secondary-foreground: oklch(0.75 0.2 142);
+  --secondary-foreground: oklch(0.8 0.2 142);
   --muted: oklch(0.15 0.05 142);
-  --muted-foreground: oklch(0.5 0.15 142);
+  --muted-foreground: oklch(0.7 0.18 142);
   --accent: oklch(0.2 0.08 142);
   --accent-foreground: oklch(0.75 0.2 142);
   --destructive: oklch(0.396 0.141 25.723);
