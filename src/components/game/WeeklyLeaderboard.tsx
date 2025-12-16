@@ -71,16 +71,24 @@ export default function WeeklyLeaderboard({
         }
         
         if (data) {
-          // Map initial data
-          const entries: LeaderboardEntryWithPfp[] = data.map((row: any) => ({
-            id: row.id,
-            playerName: row.p_player_name || row.p_player_username || "Anonymous",
-            score: row.p_score_value || 0,
-            rounds: row.p_rounds || 0,
-            timestamp: new Date(row.p_last_submit_date).getTime(),
-            averageDistance: row.p_avg_distance || 0,
-            fid: row.p_fid || null,
-          }))
+          // Map initial data - clean up bad data like "fid:undefined"
+          const entries: LeaderboardEntryWithPfp[] = data.map((row: any) => {
+            let playerName = row.p_player_name || "Anonymous"
+            // Clean up bad identity values
+            if (playerName === "fid:undefined" || playerName === "anonymous") {
+              playerName = "Anonymous"
+            }
+            
+            return {
+              id: row.id,
+              playerName,
+              score: row.p_score_value || 0,
+              rounds: row.p_rounds || 0,
+              timestamp: new Date(row.p_last_submit_date).getTime(),
+              averageDistance: row.p_avg_distance || 0,
+              fid: row.p_fid || null,
+            }
+          })
           
           setLeaderboardData(entries)
           

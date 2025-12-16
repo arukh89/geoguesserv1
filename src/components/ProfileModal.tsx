@@ -29,13 +29,13 @@ export default function ProfileModal({ isOpen, onClose, user }: ProfileModalProp
   const [bestScore, setBestScore] = useState(0)
 
   useEffect(() => {
-    if (isOpen && user?.fid) {
+    if (isOpen && user) {
       loadWeeklyHistory()
     }
-  }, [isOpen, user?.fid])
+  }, [isOpen, user?.fid, user?.username])
 
   async function loadWeeklyHistory() {
-    if (!user?.fid) return
+    if (!user) return
     
     setLoading(true)
     try {
@@ -47,28 +47,60 @@ export default function ProfileModal({ isOpen, onClose, user }: ProfileModalProp
       weekStart.setDate(now.getDate() - now.getDay())
       weekStart.setHours(0, 0, 0, 0)
 
-      // Fetch scores for this user this week
-      const { data, error } = await supabase
-        .from("scores")
-        .select("id, score_value, rounds, average_distance, created_at")
-        .eq("fid", user.fid)
-        .gte("created_at", weekStart.toISOString())
-        .order("created_at", { ascending: false })
-
-      if (error) {
-        console.error("Failed to load weekly history:", error)
-      } else if (data) {
-        setWeeklyScores(data)
-        
-        // Calculate stats
-        const total = data.reduce((sum, s) => sum + (s.score_value || 0), 0)
-        const rounds = data.reduce((sum, s) => sum + (s.rounds || 0), 0)
-        const best = Math.max(...data.map(s => s.score_value || 0), 0)
-        
-        setTotalScore(total)
-        setTotalRounds(rounds)
-        setBestScore(best)
+      // Build search conditions - search by FID, username, or identity
+      const searchConditions: string[] = []
+      
+      if (user.fid) {
+        searchConditions.push(`fid.eq.${user.fid}`)
+        searchConditions.push(`identity.eq.fid:${user.fid}`)
       }
+      if (user.username) {
+        searchConditions.push(`player_name.eq.@${user.username}`)
+        searchConditions.push(`identity.eq.@${user.username}`)
+      }
+
+      let data: WeeklyScore[] = []
+      
+      if (searchConditions.length > 0) {
+        // Try to fetch by FID first
+        if (user.fid) {
+          const { data: fidData, error: fidError } = await supabase
+            .from("scores")
+            .select("id, score_value, rounds, average_distance, created_at")
+            .eq("fid", user.fid)
+            .gte("created_at", weekStart.toISOString())
+            .order("created_at", { ascending: false })
+          
+          if (!fidError && fidData && fidData.length > 0) {
+            data = fidData
+          }
+        }
+        
+        // If no results by FID, try by username/identity
+        if (data.length === 0 && user.username) {
+          const { data: nameData, error: nameError } = await supabase
+            .from("scores")
+            .select("id, score_value, rounds, average_distance, created_at")
+            .or(`player_name.eq.@${user.username},identity.eq.@${user.username}`)
+            .gte("created_at", weekStart.toISOString())
+            .order("created_at", { ascending: false })
+          
+          if (!nameError && nameData) {
+            data = nameData
+          }
+        }
+      }
+
+      setWeeklyScores(data)
+      
+      // Calculate stats
+      const total = data.reduce((sum, s) => sum + (s.score_value || 0), 0)
+      const rounds = data.reduce((sum, s) => sum + (s.rounds || 0), 0)
+      const best = data.length > 0 ? Math.max(...data.map(s => s.score_value || 0)) : 0
+      
+      setTotalScore(total)
+      setTotalRounds(rounds)
+      setBestScore(best)
     } catch (err) {
       console.error("Error loading history:", err)
     } finally {

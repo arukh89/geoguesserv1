@@ -40,15 +40,29 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
           return
         }
         
-        const mapped: LeaderboardEntry[] = (data || []).map((row: any) => ({
-          id: row.id,
-          playerName: row.player_name || row.identity || "Anonymous",
-          score: row.score_value,
-          rounds: row.rounds,
-          timestamp: new Date(row.created_at).getTime(),
-          averageDistance: row.average_distance,
-          fid: row.fid || null,
-        }))
+        const mapped: LeaderboardEntry[] = (data || []).map((row: any) => {
+          let playerName = row.player_name || "Anonymous"
+          // Clean up bad identity values
+          if (playerName === "fid:undefined" || playerName === "anonymous" || playerName === "Anonymous") {
+            // Try to use identity if it looks like a username
+            const identity = row.identity || ""
+            if (identity.startsWith("@") || (identity && !identity.startsWith("fid:") && identity !== "anonymous")) {
+              playerName = identity
+            } else {
+              playerName = "Anonymous"
+            }
+          }
+          
+          return {
+            id: row.id,
+            playerName,
+            score: row.score_value,
+            rounds: row.rounds,
+            timestamp: new Date(row.created_at).getTime(),
+            averageDistance: row.average_distance,
+            fid: row.fid || null,
+          }
+        })
         
         setEntries(mapped)
         

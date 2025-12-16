@@ -19,7 +19,7 @@ interface FinalResultsProps {
 }
 
 export default function FinalResults({ results, totalScore, onPlayAgain, onShare }: FinalResultsProps) {
-  const { user: farcasterUser } = useFarcasterUser()
+  const { user: farcasterUser, loading: userLoading } = useFarcasterUser()
   const distances = results.map((r: RoundResult) => r.distance)
   const averageDistance = calculateAverageDistance(distances)
   const bestRound = results.reduce((best: RoundResult, current: RoundResult) =>
@@ -69,6 +69,13 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
   const [submissionMessage, setSubmissionMessage] = useState<string>('')
 
   useEffect(() => {
+    // Wait for user loading to complete before submitting
+    if (userLoading) {
+      setSubmissionStatus('submitting')
+      setSubmissionMessage('Loading user data...')
+      return
+    }
+    
     if (submittedRef.current) {
       return
     }
@@ -81,15 +88,14 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
         
         const supabase = createClient()
 
-        // Get the current user session for identity
-        const userForDisplay = farcasterUser || null
-        
         // Use database function to insert score with validation
         // Store username and FID separately for proper display
         const playerName = farcasterUser?.username 
           ? `@${farcasterUser.username}` 
           : farcasterUser?.displayName || "Anonymous";
         const playerFid = farcasterUser?.fid || null;
+        
+        console.log("[FinalResults] Submitting score with:", { playerName, playerFid, farcasterUser })
         
         const { data, error } = await supabase.rpc("insert_score", {
           p_player_name: playerName,
@@ -118,7 +124,7 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
     
     submit()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [userLoading])
 
   return (
     <div className="min-h-screen p-4 pt-16 md:pt-8 relative z-10">
