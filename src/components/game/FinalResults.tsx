@@ -115,6 +115,8 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
         setSubmissionMessage(`Failed to submit score: ${err instanceof Error ? err.message : 'Unknown error'}`)
       }
     }
+    
+    submit()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
