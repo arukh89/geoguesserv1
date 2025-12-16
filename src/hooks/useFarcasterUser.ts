@@ -1,6 +1,8 @@
 ﻿"use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
+import { useAccount } from "wagmi"
+import { fetchUserByFid, fetchUserByAddress, type FarcasterUserData } from "@/lib/neynar/client"
 
 export interface FarcasterUser {
   fid: number
@@ -9,41 +11,6 @@ export interface FarcasterUser {
   pfpUrl?: string
   custodyAddress?: string
   verifiedAddresses?: string[]
-}
-
-// Fetch user profile from Neynar API
-async function fetchUserFromNeynar(fid: number): Promise<Partial<FarcasterUser> | null> {
-  try {
-    // Use Neynar's public API to get user by FID
-    const response = await fetch(`https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`, {
-      headers: {
-        'accept': 'application/json',
-        'api_key': process.env.NEXT_PUBLIC_NEYNAR_API_KEY || 'NEYNAR_API_DOCS'
-      }
-    })
-    
-    if (!response.ok) {
-      console.warn('Neynar API request failed:', response.status)
-      return null
-    }
-    
-    const data = await response.json()
-    const user = data?.users?.[0]
-    
-    if (user) {
-      return {
-        fid: user.fid,
-        username: user.username,
-        displayName: user.display_name,
-        pfpUrl: user.pfp_url,
-        custodyAddress: user.custody_address,
-        verifiedAddresses: user.verified_addresses?.eth_addresses || []
-      }
-    }
-  } catch (error) {
-    console.warn('Failed to fetch from Neynar:', error)
-  }
-  return null
 }
 
 function coerceFidSafe(val: any): number | null {
@@ -60,14 +27,12 @@ function coerceFidSafe(val: any): number | null {
       return Number.isFinite(n) ? n : null
     }
     if (t === "object") {
-      // common reactive wrappers
       for (const k of ["value", "current", "val"]) {
         if (val[k] != null) {
           const n = coerceFidSafe(val[k])
           if (n) return n
         }
       }
-      // last resort: extract first integer from toString()
       try {
         const s = String(val)
         const m = s.match(/\d{2,}/)
@@ -101,102 +66,173 @@ function readFidFromStorage(): number | null {
   return null
 }
 
+function saveUserToStorage(user: FarcasterUser) {
+  try {
+    localStorage.setItem("fc_fid", String(user.fid))
+    localStorage.setItem("fc_user", JSON.stringify(user))
+  } catch {}
+}
+
+function readUserFromStorage(): FarcasterUser | null {
+  try {
+    const stored = localStorage.getItem("fc_user")
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (parsed?.fid) return parsed
+    }
+  } catch {}
+  return null
+}
+
 export function useFarcasterUser() {
   const [user, setUser] = useState<FarcasterUser | null>(null)
   const [loading, setLoading] = useState(true)
+  const { address, isConnected } = useAccount()
 
-  useEffect(() => {
-    let cancelled = false
+  const loadUser = useCallback(async () => {
+    let resolved: FarcasterUser | null = null
+    
+    try {
+      if (typeof window === "undefined") {
+        setLoading(false)
+        return
+      }
 
-    async function loadUser() {
-      let resolved: any = null
+      // 1. Try Farcaster MiniApp SDK first (for Warpcast)
       try {
-        if (typeof window === "undefined") {
-          setLoading(false)
-          return
-        }
-
         const { sdk } = await import("@farcaster/miniapp-sdk")
-
-        // Fast path: existing context
+        
         if (sdk?.context?.user?.fid != null) {
-          resolved = sdk.context.user
+          const sdkUser = sdk.context.user
+          resolved = {
+            fid: sdkUser.fid,
+            username: sdkUser.username,
+            displayName: sdkUser.displayName,
+            pfpUrl: sdkUser.pfpUrl,
+          }
         }
 
-        // Try to become ready, but don't hang forever
+        // Try to become ready
         const ready = await Promise.race([
           (async () => {
             try {
               await sdk.actions.ready()
               return true
-            } catch {
-              return false
-            }
+            } catch { return false }
           })(),
-          new Promise<boolean>((res) => setTimeout(() => res(false), 700)),
+          new Promise<boolean>((res) => setTimeout(() => res(false), 1000)),
         ])
 
-        if (!resolved && ready) {
-          if (typeof (sdk.actions as any).getUser === "function") {
-            try { resolved = await (sdk.actions as any).getUser() } catch {}
-          }
-          if (!resolved && sdk.context?.user) {
-            resolved = sdk.context.user
+        if (!resolved && ready && sdk.context?.user) {
+          const sdkUser = sdk.context.user
+          resolved = {
+            fid: sdkUser.fid,
+            username: sdkUser.username,
+            displayName: sdkUser.displayName,
+            pfpUrl: sdkUser.pfpUrl,
           }
         }
       } catch {
         // Not in miniapp context
       }
 
-      // Fallbacks: URL param, then localStorage
+      // 2. If connected wallet, lookup FID from Neynar by address
+      if (!resolved && isConnected && address) {
+        console.log('[useFarcasterUser] Looking up user by wallet address:', address)
+        const neynarUser = await fetchUserByAddress(address)
+        if (neynarUser) {
+          console.log('[useFarcasterUser] Found user from Neynar:', neynarUser)
+          resolved = {
+            fid: neynarUser.fid,
+            username: neynarUser.username,
+            displayName: neynarUser.displayName,
+            pfpUrl: neynarUser.pfpUrl,
+            custodyAddress: neynarUser.custodyAddress,
+            verifiedAddresses: neynarUser.verifiedAddresses,
+          }
+        }
+      }
+
+      // 3. Try URL params
       if (!resolved) {
         const urlFid = readFidFromSearch()
         if (urlFid) {
-          try { localStorage.setItem("fc_fid", String(urlFid)) } catch {}
-          resolved = { fid: urlFid }
+          const neynarUser = await fetchUserByFid(urlFid)
+          if (neynarUser) {
+            resolved = {
+              fid: neynarUser.fid,
+              username: neynarUser.username,
+              displayName: neynarUser.displayName,
+              pfpUrl: neynarUser.pfpUrl,
+              custodyAddress: neynarUser.custodyAddress,
+              verifiedAddresses: neynarUser.verifiedAddresses,
+            }
+          } else {
+            resolved = { fid: urlFid }
+          }
+        }
+      }
+
+      // 4. Try localStorage
+      if (!resolved) {
+        const storedUser = readUserFromStorage()
+        if (storedUser) {
+          resolved = storedUser
         } else {
           const storedFid = readFidFromStorage()
           if (storedFid) {
-            resolved = { fid: storedFid }
-          }
-        }
-      }
-
-      if (!cancelled) {
-        const fidNum = coerceFidSafe(resolved?.fid)
-        if (fidNum) {
-          // If we have FID but missing username/pfp, fetch from Neynar
-          let finalUser: FarcasterUser = {
-            fid: fidNum,
-            username: resolved?.username,
-            displayName: resolved?.displayName,
-            pfpUrl: resolved?.pfpUrl,
-          }
-          
-          // Fetch from Neynar if missing username or pfp
-          if (!finalUser.username || !finalUser.pfpUrl) {
-            const neynarUser = await fetchUserFromNeynar(fidNum)
+            const neynarUser = await fetchUserByFid(storedFid)
             if (neynarUser) {
-              finalUser = {
-                ...finalUser,
-                username: finalUser.username || neynarUser.username,
-                displayName: finalUser.displayName || neynarUser.displayName,
-                pfpUrl: finalUser.pfpUrl || neynarUser.pfpUrl,
-                custodyAddress: neynarUser.custodyAddress,
-                verifiedAddresses: neynarUser.verifiedAddresses,
+              resolved = {
+                fid: neynarUser.fid,
+                username: neynarUser.username,
+                displayName: neynarUser.displayName,
+                pfpUrl: neynarUser.pfpUrl,
               }
+            } else {
+              resolved = { fid: storedFid }
             }
           }
-          
-          setUser(finalUser)
         }
-        setLoading(false)
       }
+
+      // 5. If we have FID but missing data, fetch from Neynar
+      if (resolved?.fid && (!resolved.username || !resolved.pfpUrl)) {
+        const neynarUser = await fetchUserByFid(resolved.fid)
+        if (neynarUser) {
+          resolved = {
+            ...resolved,
+            username: resolved.username || neynarUser.username,
+            displayName: resolved.displayName || neynarUser.displayName,
+            pfpUrl: resolved.pfpUrl || neynarUser.pfpUrl,
+            custodyAddress: neynarUser.custodyAddress,
+            verifiedAddresses: neynarUser.verifiedAddresses,
+          }
+        }
+      }
+
+      // Save to storage if we have a user
+      if (resolved) {
+        saveUserToStorage(resolved)
+      }
+
+      setUser(resolved)
+    } catch (error) {
+      console.error('[useFarcasterUser] Error loading user:', error)
+    } finally {
+      setLoading(false)
     }
+  }, [address, isConnected])
 
+  useEffect(() => {
     loadUser()
-    return () => { cancelled = true }
-  }, [])
+  }, [loadUser])
 
-  return { user, loading }
+  // Refresh user data
+  const refresh = useCallback(() => {
+    setLoading(true)
+    loadUser()
+  }, [loadUser])
+
+  return { user, loading, refresh }
 }

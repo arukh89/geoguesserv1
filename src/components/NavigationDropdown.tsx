@@ -1,8 +1,8 @@
 "use client"
 
-import React from "react"
+import React, { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { HomeIcon, Menu, Trophy, Shield, Wallet, User } from "lucide-react"
+import { HomeIcon, Menu, Trophy, Shield, Wallet, User, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -14,23 +14,28 @@ import {
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
 import { useAccount, useConnect, useDisconnect, useSignMessage } from "wagmi"
 import { isAdmin, isAdminWallet } from "@/lib/admin/config"
-import { formatUsernameForDisplay, formatUsernameWithFid } from "@/lib/utils/formatUsernameFarcaster"
 import { useMemo } from "react"
 
 function short(addr?: string) {
-  return addr ? `${addr.slice(0, 6)}.${addr.slice(-4)}` : ""
+  return addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : ""
 }
 
 export function NavigationDropdown() {
   const router = useRouter()
-  const { user } = useFarcasterUser()
+  const { user, loading, refresh } = useFarcasterUser()
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
-  const { connect, connectAsync, connectors, isPending } = useConnect()
+  const { connectAsync, connectors, isPending } = useConnect()
   const { signMessageAsync } = useSignMessage()
-  const { user: farcasterUser } = useFarcasterUser()
 
   const isAdminUser = (user?.fid ? isAdmin(user.fid) : false) || (isConnected && address ? isAdminWallet(address) : false)
+
+  // Refresh user data when wallet connects
+  useEffect(() => {
+    if (isConnected && address && !user) {
+      refresh()
+    }
+  }, [isConnected, address, user, refresh])
 
   const preferred = useMemo(() => {
     const far = connectors.find((c) => /farcaster/i.test(c.name) || /mini.?app/i.test(c.name) || /warp/i.test(c.name))
@@ -39,36 +44,46 @@ export function NavigationDropdown() {
     return { far, inj, cbw }
   }, [connectors])
 
-  async function trySign() {
-    try {
-      await signMessageAsync({ message: "Sign in to Farcaster Geo Explorer" })
-    } catch {}
-  }
-
   async function handleFarcasterLogin() {
     if (!preferred.far) return
     try {
       await connectAsync({ connector: preferred.far })
-    } catch {}
-    await trySign()
+      // Refresh to get Farcaster user data
+      setTimeout(() => refresh(), 500)
+    } catch (e) {
+      console.warn('Farcaster login failed:', e)
+    }
   }
 
   async function handleWalletLogin() {
-    const c = preferred.inj || connectors.find(x=>/injected/i.test(x.id))
+    const c = preferred.inj || preferred.cbw || connectors.find(x => /injected/i.test(x.id))
     if (c) {
       try {
         await connectAsync({ connector: c })
-      } catch {
+        // Refresh to lookup FID from wallet address via Neynar
+        setTimeout(() => refresh(), 500)
+      } catch (e) {
+        console.warn('Wallet login failed:', e)
         try {
           await (window as any)?.ethereum?.request?.({ method: "eth_requestAccounts" })
+          setTimeout(() => refresh(), 500)
         } catch {}
       }
-      await trySign()
     }
   }
 
   const handleNavigation = (path: string) => {
     router.push(path)
+  }
+
+  const handleDisconnect = () => {
+    disconnect()
+    // Clear stored user data
+    try {
+      localStorage.removeItem("fc_fid")
+      localStorage.removeItem("fc_user")
+    } catch {}
+    window.location.reload()
   }
 
   const triggerButtonClass = "flex items-center gap-2 px-4 py-2 rounded-lg bg-black/80 backdrop-blur-lg border-2 border-green-500/50 hover:bg-green-900/20 hover:border-green-400 transition-colors shadow-lg shadow-green-500/20 text-green-300 font-semibold hover:text-green-200"
@@ -82,7 +97,7 @@ export function NavigationDropdown() {
             Menu
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent align="end" className="w-64">
           <DropdownMenuItem onClick={() => handleNavigation("/")} className="flex items-center gap-2">
             <HomeIcon className="w-4 h-4" />
             Home
@@ -120,36 +135,51 @@ export function NavigationDropdown() {
           {isConnected && (
             <>
               <DropdownMenuSeparator />
-              <div className="px-2 py-1.5 text-sm text-green-300">
-                {farcasterUser ? (
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-semibold">
-                      {farcasterUser.username ? `@${farcasterUser.username}` : farcasterUser.displayName || "User"}
-                    </span>
-                    {farcasterUser.fid && (
-                      <span className="text-xs text-green-400/70 font-mono">FID: {farcasterUser.fid}</span>
+              <div className="px-3 py-2">
+                {loading ? (
+                  <div className="flex items-center gap-2 text-green-400/70">
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">Loading...</span>
+                  </div>
+                ) : user ? (
+                  <div className="flex items-center gap-3">
+                    {user.pfpUrl ? (
+                      <img 
+                        src={user.pfpUrl} 
+                        alt="Profile" 
+                        className="w-10 h-10 rounded-full object-cover border-2 border-green-500/50"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center border-2 border-green-500/50">
+                        <User className="w-5 h-5 text-green-400" />
+                      </div>
                     )}
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-green-300">
+                        {user.username ? `@${user.username}` : user.displayName || "User"}
+                      </span>
+                      {user.fid && (
+                        <span className="text-xs text-green-400/70 font-mono">FID: {user.fid}</span>
+                      )}
+                      {!user.fid && address && (
+                        <span className="text-xs text-green-400/70 font-mono">{short(address)}</span>
+                      )}
+                    </div>
                   </div>
                 ) : (
-                  <span>{short(address)}</span>
+                  <div className="flex items-center gap-2">
+                    <Wallet className="w-4 h-4 text-green-400" />
+                    <span className="text-sm text-green-300 font-mono">{short(address)}</span>
+                  </div>
                 )}
               </div>
-              <DropdownMenuItem onClick={() => disconnect()} className="flex items-center gap-2">
+              <DropdownMenuItem onClick={handleDisconnect} className="flex items-center gap-2 text-red-400 hover:text-red-300">
                 Disconnect
               </DropdownMenuItem>
             </>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-
-      {user && (
-        <div className="px-2 py-1 rounded-md border border-green-500/40 text-green-300 text-xs font-mono bg-black/60 flex items-center gap-1.5">
-          <span>{user.username ? `@${user.username}` : `FID: ${user.fid}`}</span>
-          {user.username && user.fid && (
-            <span className="text-green-400/60 text-[10px]">#{user.fid}</span>
-          )}
-        </div>
-      )}
     </div>
   )
 }

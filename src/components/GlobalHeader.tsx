@@ -3,13 +3,11 @@
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { User } from "lucide-react"
-import { useRouter } from "next/navigation"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
 import NavigationDropdown from "@/components/NavigationDropdown"
 import ProfileModal from "@/components/ProfileModal"
 
 export function GlobalHeader() {
-  const router = useRouter()
   const { user, loading } = useFarcasterUser()
   const [showProfile, setShowProfile] = useState(false)
 
@@ -34,7 +32,7 @@ export function GlobalHeader() {
                 <User className="w-5 h-5" />
               )}
               <span className="hidden sm:inline">
-                {user?.username ? `@${user.username}` : 'Profile'}
+                {loading ? "Loading..." : user?.username ? `@${user.username}` : "Profile"}
               </span>
             </Button>
           </div>
