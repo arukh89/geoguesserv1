@@ -160,7 +160,7 @@ export default function WeeklyLeaderboard({
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="p-3 sm:p-6 space-y-2 sm:space-y-4">
           {isLoading ? (
             <div className="flex justify-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500/30 border-t-green-400"></div>
@@ -170,7 +170,7 @@ export default function WeeklyLeaderboard({
               No scores yet this week. Be the first to play!
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {leaderboardData.map((entry, index) => {
                 const isCurrentUserEntry = farcasterUser?.fid && entry.fid === farcasterUser.fid
                 
@@ -180,15 +180,15 @@ export default function WeeklyLeaderboard({
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className={`flex items-center p-4 rounded-lg border ${
+                    className={`flex items-center p-2 sm:p-4 rounded-lg border ${
                       isCurrentUserEntry
                         ? "border-green-400 bg-green-500/10"
                         : "border-green-500/20 bg-green-500/5"
                     }`}
                   >
                     {/* Rank */}
-                    <div className="flex-shrink-0 w-12 text-center">
-                      <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center text-lg font-bold ${
+                    <div className="flex-shrink-0 w-8 sm:w-12 text-center">
+                      <div className={`w-7 h-7 sm:w-10 sm:h-10 mx-auto rounded-full flex items-center justify-center text-sm sm:text-lg font-bold ${
                         index < 3 ? "bg-green-500/20 text-green-300" : "bg-green-500/10 text-green-400/70"
                       }`}>
                         {getRankIcon(index + 1) || `#${index + 1}`}
@@ -196,55 +196,55 @@ export default function WeeklyLeaderboard({
                     </div>
                     
                     {/* PFP */}
-                    <div className="flex-shrink-0 w-12">
+                    <div className="flex-shrink-0 w-8 sm:w-12">
                       {entry.pfpUrl ? (
                         <img 
                           src={entry.pfpUrl} 
                           alt="" 
-                          className="w-10 h-10 rounded-full object-cover border-2 border-green-500/30"
+                          className="w-7 h-7 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-green-500/30"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center border-2 border-green-500/30">
-                          <User className="w-5 h-5 text-green-400/50" />
+                        <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-green-500/10 flex items-center justify-center border-2 border-green-500/30">
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-green-400/50" />
                         </div>
                       )}
                     </div>
                     
                     {/* Name & Stats */}
-                    <div className="flex-grow min-w-0 ml-2">
-                      <div className="flex items-center flex-wrap gap-2">
-                        <span className="text-lg font-bold text-green-300 truncate">
+                    <div className="flex-grow min-w-0 ml-1 sm:ml-2">
+                      <div className="flex items-center flex-wrap gap-1 sm:gap-2">
+                        <span className="text-xs sm:text-base font-bold text-green-300 truncate max-w-[80px] sm:max-w-none">
                           {entry.playerName}
                         </span>
                         {entry.fid && (
-                          <span className="text-xs bg-purple-500/30 text-purple-300 px-2 py-0.5 rounded-full font-mono border border-purple-500/50">
+                          <span className="text-[10px] sm:text-xs bg-purple-500/30 text-purple-300 px-1 sm:px-2 py-0.5 rounded-full font-mono border border-purple-500/50">
                             #{entry.fid}
                           </span>
                         )}
                         {isCurrentUserEntry && (
-                          <span className="text-xs bg-green-400 text-black px-2 py-0.5 rounded-full font-bold">
+                          <span className="text-[10px] sm:text-xs bg-green-400 text-black px-1 sm:px-2 py-0.5 rounded-full font-bold">
                             YOU
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-green-400/70">
-                        <span className="flex items-center gap-1">
-                          <TrendingUp className="w-3 h-3" />
-                          {entry.rounds || 0} rounds
+                      <div className="flex items-center gap-2 sm:gap-3 mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-green-400/70">
+                        <span className="flex items-center gap-0.5 sm:gap-1">
+                          <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                          {entry.rounds || 0}
                         </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {entry.averageDistance ? `~${Math.round(entry.averageDistance)}km avg` : "N/A"}
+                        <span className="flex items-center gap-0.5 sm:gap-1">
+                          <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                          {entry.averageDistance ? `~${Math.round(entry.averageDistance)}km` : "N/A"}
                         </span>
                       </div>
                     </div>
                     
                     {/* Score */}
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-green-300">
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-base sm:text-2xl font-bold text-green-300">
                         {entry.score.toLocaleString()}
                       </div>
-                      <div className="text-xs text-green-400/70">
+                      <div className="text-[10px] sm:text-xs text-green-400/70">
                         points
                       </div>
                     </div>

@@ -142,7 +142,7 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="p-6">
+      <CardContent className="p-3 sm:p-6">
         {loading ? (
           <div className="text-center py-8 text-green-400/70">
             <div className="animate-pulse">Loading leaderboard...</div>
@@ -153,7 +153,7 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
             <p>No scores yet. Be the first to play!</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {sortedEntries.map((entry, index) => {
               const rank = index + 1
               const isCurrentScore = currentScore && entry.score === currentScore
@@ -164,12 +164,12 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className={`p-4 rounded-lg border border-green-500/20 bg-green-500/5 ${
+                  className={`p-2 sm:p-4 rounded-lg border border-green-500/20 bg-green-500/5 ${
                     isCurrentScore ? "ring-2 ring-green-400" : ""
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0">{getMedalIcon(rank)}</div>
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="flex-shrink-0 w-6 sm:w-auto">{getMedalIcon(rank)}</div>
                     
                     {/* PFP */}
                     <div className="flex-shrink-0">
@@ -177,32 +177,32 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
                         <img 
                           src={entry.pfpUrl} 
                           alt="" 
-                          className="w-10 h-10 rounded-full object-cover border-2 border-green-500/30"
+                          className="w-7 h-7 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-green-500/30"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center border-2 border-green-500/30">
-                          <User className="w-5 h-5 text-green-400/50" />
+                        <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-green-500/10 flex items-center justify-center border-2 border-green-500/30">
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-green-400/50" />
                         </div>
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold truncate text-green-300">{entry.playerName}</span>
+                      <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                        <span className="text-xs sm:text-base font-semibold truncate text-green-300 max-w-[80px] sm:max-w-none">{entry.playerName}</span>
                         {entry.fid && (
-                          <span className="text-xs bg-purple-500/30 text-purple-300 px-1.5 py-0.5 rounded font-mono border border-purple-500/50">
+                          <span className="text-[10px] sm:text-xs bg-purple-500/30 text-purple-300 px-1 sm:px-1.5 py-0.5 rounded font-mono border border-purple-500/50">
                             #{entry.fid}
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-green-400/70">
-                        {entry.rounds} rounds • Avg {entry.averageDistance}km
+                      <div className="text-[10px] sm:text-sm text-green-400/70">
+                        {entry.rounds} rounds • {entry.averageDistance}km
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <div className="text-xl font-bold text-green-300">{entry.score.toLocaleString()}</div>
-                      <div className="text-xs text-green-400/70">points</div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-sm sm:text-xl font-bold text-green-300">{entry.score.toLocaleString()}</div>
+                      <div className="text-[10px] sm:text-xs text-green-400/70">points</div>
                     </div>
                   </div>
                 </motion.div>
