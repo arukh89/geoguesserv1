@@ -1,7 +1,7 @@
 # Database Schema for GeoGuessr Game
 
 ## Overview
-This document describes the database schema for the GeoGuessr game project, including all tables, indexes, policies, and functions needed for the application to function properly.
+This document describes the database schema for the GeoGuessr game project, including all tables, indexes, policies, functions, and scheduled jobs.
 
 ## Tables
 
@@ -16,11 +16,12 @@ Stores player scores for the leaderboard system.
 - `score_value` (integer) - The total score achieved
 - `rounds` (integer) - Number of rounds played
 - `average_distance` (integer) - Average distance from correct locations in kilometers
+- `fid` (integer) - Farcaster user ID for identified players
 
 **Indexes:**
 - `idx_scores_created_at` - For querying scores by date
 - `idx_scores_score_value` - For ordering scores by value (leaderboard)
-- `idx_scores_identity` - For filtering by player identity
+- `idx_scores_fid` - For filtering by Farcaster ID
 
 **Usage in Code:**
 - `src/components/game/FinalResults.tsx` - Inserts new scores
@@ -46,27 +47,68 @@ Records token payouts to weekly winners.
 **Indexes:**
 - `idx_admin_rewards_week_start` - For filtering by competition week
 - `idx_admin_rewards_recipient_wallet` - For tracking rewards to specific users
-- `idx_admin_rewards_tx_hash` - For transaction lookup
-
-**Usage in Code:**
-- `src/components/game/WeeklyLeaderboard.tsx` - Checks if rewards were sent
-- `src/components/admin/AdminPanel.tsx` - Inserts new reward records
 
 ## Functions
 
-### get_weekly_leaderboard(week_start_date date)
-Returns the leaderboard for a specific week with rankings.
+### insert_score()
+Inserts a new score with validation.
 
 **Parameters:**
-- `week_start_date` (optional) - Start date of the week (defaults to current week)
+- `p_player_name` (text) - Player display name
+- `p_identity` (text) - Wallet address or username
+- `p_score_value` (integer) - Score achieved
+- `p_rounds` (integer) - Number of rounds
+- `p_average_distance` (integer) - Average distance in km
+- `p_fid` (integer) - Farcaster user ID
 
-**Returns:**
-Table with columns: id, identity, score_value, weekly_rank, week_start, week_end
+**Returns:** UUID of the new score record
+
+### get_top_leaderboard(limit_count)
+Returns the top scores with global ranking.
+
+**Parameters:**
+- `limit_count` (integer, default 10) - Number of results to return
+
+**Returns:** Table with id, player_name, identity, score_value, rounds, average_distance, created_at, global_rank, fid
+
+### cleanup_weekly_scores()
+Deletes scores older than the current week. Used by the weekly cron job.
 
 ## Views
 
-### weekly_top_10
-A view that returns the top 10 players for the current week.
+### leaderboard_weekly
+A view that returns all players for the current week with rankings.
+
+**Columns:**
+- `id` - Score ID
+- `p_player_name` - Player name
+- `p_player_username` - Player identity/username
+- `p_score_value` - Score achieved
+- `p_rounds` - Number of rounds
+- `p_avg_distance` - Average distance
+- `p_last_submit_date` - Date of submission
+- `p_fid` - Farcaster ID
+- `rank` - Weekly ranking position
+
+## Scheduled Jobs (pg_cron)
+
+### weekly-leaderboard-cleanup
+Runs every Monday at 00:00 UTC to delete scores from previous weeks.
+
+**Schedule:** `0 0 * * 1` (Every Monday at midnight UTC)
+**Action:** Calls `cleanup_weekly_scores()` function
+
+**Management Commands:**
+```sql
+-- View scheduled jobs
+SELECT * FROM cron.job;
+
+-- Manually run cleanup
+SELECT public.cleanup_weekly_scores();
+
+-- Unschedule the job
+SELECT cron.unschedule('weekly-leaderboard-cleanup');
+```
 
 ## Row Level Security (RLS)
 
@@ -89,26 +131,23 @@ Both tables are enabled for Supabase Realtime, allowing:
 ## Migration Scripts
 
 ### Current Migrations:
-1. `scripts/001_create_scores_table.sql` - Basic scores table (legacy)
-2. `supabase/migrations/20251214194736_init_scores_admin_rewards.sql` - Scores and admin_rewards tables
-3. `supabase/migrations/20251215052900_create_complete_schema.sql` - Complete schema with functions and views
-
-### Recommended Migration Order:
-1. Run `20251215052900_create_complete_schema.sql` for new installations
-2. This script is idempotent and can be run on existing installations
+1. `20251214194736_init_scores_admin_rewards.sql` - Initial scores and admin_rewards tables
+2. `20251215052900_create_complete_schema.sql` - Complete schema with functions and views
+3. `20251216000000_add_fid_to_scores.sql` - Added FID column and updated functions
+4. `20251216010000_weekly_cleanup_cron.sql` - Weekly cleanup cron job
 
 ## Data Flow
 
-1. **Game Completion**: When a player finishes a game, `FinalResults.tsx` inserts a new score
-2. **Leaderboard Display**: `Leaderboard.tsx` queries the top 10 scores of all time
-3. **Weekly Competition**: `WeeklyLeaderboard.tsx` calculates weekly rankings
+1. **Game Completion**: When a player finishes a game, `FinalResults.tsx` inserts a new score with FID
+2. **Leaderboard Display**: `Leaderboard.tsx` queries the top 10 scores showing username + FID
+3. **Weekly Competition**: `WeeklyLeaderboard.tsx` shows weekly rankings with username + FID badge
 4. **Reward Distribution**: `AdminPanel.tsx` allows admins to send tokens to winners
-5. **Reward Tracking**: Rewards are recorded in `admin_rewards` table
+5. **Weekly Reset**: Every Monday at 00:00 UTC, old scores are automatically deleted
 
 ## Notes
 
-- The `identity` field in `scores` table is used to connect scores to wallet addresses
-- Anonymous players have `player_name` as "You" and `identity` as null
-- Weekly competitions run from Sunday to Saturday
+- The `fid` field stores Farcaster user ID for social identity
+- The `identity` field stores wallet address or username
+- Anonymous players have `player_name` as "You" and `identity`/`fid` as null
+- Weekly competitions reset every Monday at 00:00 UTC
 - All timestamps are stored in UTC using `timestamptz`
-- The schema supports both anonymous and identified players
