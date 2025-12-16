@@ -212,8 +212,8 @@ export default function WeeklyLeaderboard({
                           {entry.playerName}
                         </span>
                         {entry.fid && (
-                          <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-mono">
-                            FID: {entry.fid}
+                          <span className="text-xs bg-purple-500/30 text-purple-300 px-2 py-0.5 rounded-full font-mono border border-purple-500/50">
+                            #{entry.fid}
                           </span>
                         )}
                         {isCurrentUserEntry && (

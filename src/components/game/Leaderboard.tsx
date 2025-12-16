@@ -190,8 +190,8 @@ export default function Leaderboard({ currentScore }: LeaderboardProps) {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold truncate text-green-300">{entry.playerName}</span>
                         {entry.fid && (
-                          <span className="text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded font-mono">
-                            FID: {entry.fid}
+                          <span className="text-xs bg-purple-500/30 text-purple-300 px-1.5 py-0.5 rounded font-mono border border-purple-500/50">
+                            #{entry.fid}
                           </span>
                         )}
                       </div>
