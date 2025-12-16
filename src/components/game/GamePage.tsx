@@ -58,6 +58,7 @@ export function GamePage() {
   const [showMap, setShowMap] = useState(false)
   const [loadingLocation, setLoadingLocation] = useState(false)
   const [initialized, setInitialized] = useState(false)
+  const [loadingRound, setLoadingRound] = useState(false)
 
   // Restore game state on mount
   useEffect(() => {
@@ -171,13 +172,18 @@ export function GamePage() {
     try {
       const newLocations = await fetchAllLocations()
       setLocations(newLocations)
+      setLoadingRound(true)
       setGameState("playing")
+      // Brief delay to show round loading
+      setTimeout(() => setLoadingRound(false), 800)
     } catch (e) {
       console.error("[GamePage] Failed to start game:", e)
       // Fallback to curated locations
       const fallbackLocations = getRandomLocations(TOTAL_ROUNDS)
       setLocations(fallbackLocations)
+      setLoadingRound(true)
       setGameState("playing")
+      setTimeout(() => setLoadingRound(false), 800)
     } finally {
       setLoadingLocation(false)
     }
@@ -203,10 +209,13 @@ export function GamePage() {
 
   const nextRound = () => {
     if (currentRound < locations.length - 1) {
+      setLoadingRound(true)
       setCurrentRound(currentRound + 1)
       setGameState("playing")
       setShowMap(false)
       if (typeof timeLimit === "number") setTimeLeft(timeLimit)
+      // Brief delay to show loading, then hide
+      setTimeout(() => setLoadingRound(false), 500)
     } else {
       setGameState("final")
     }
@@ -288,6 +297,15 @@ Can you beat my score? 👇`
           timeLeftSec={typeof timeLeft === "number" ? timeLeft : undefined}
           onBack={goHome}
         />
+
+        {/* Loading overlay for round transition */}
+        {loadingRound && (
+          <div className="absolute inset-0 top-14 z-[150] bg-black/90 flex flex-col items-center justify-center">
+            <Loader2 className="w-12 h-12 animate-spin text-green-400 mb-4" />
+            <p className="text-green-400 text-lg font-medium">Loading Round {currentRound + 1}...</p>
+            <p className="text-green-400/70 text-sm mt-2">Preparing your next location</p>
+          </div>
+        )}
 
         <div className="absolute inset-0 top-14">
           <PanoramaViewer
