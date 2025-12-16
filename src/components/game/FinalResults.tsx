@@ -95,11 +95,14 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
           : farcasterUser?.displayName || "Anonymous";
         const playerFid = farcasterUser?.fid || null;
         
-        console.log("[FinalResults] Submitting score with:", { playerName, playerFid, farcasterUser })
+        // Get wallet address from Farcaster user if available
+        const walletAddress = farcasterUser?.verifiedAddresses?.[0] || farcasterUser?.custodyAddress || null;
+        
+        console.log("[FinalResults] Submitting score with:", { playerName, playerFid, walletAddress, farcasterUser })
         
         const { data, error } = await supabase.rpc("insert_score", {
           p_player_name: playerName,
-          p_identity: playerFid ? `fid:${playerFid}` : playerName,
+          p_identity: walletAddress, // Store wallet address for token rewards
           p_score_value: totalScore,
           p_rounds: results.length,
           p_average_distance: Math.round(averageDistance),
