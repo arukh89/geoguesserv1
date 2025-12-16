@@ -61,9 +61,12 @@ export default function WeeklyLeaderboard({
         
         console.log("[WeeklyLeaderboard] Fetching data from leaderboard_weekly...")
         
+        // Use appropriate view based on period
+        const viewName = period === 'daily' ? 'leaderboard_daily' : 'leaderboard_weekly'
+        
         const { data, error } = await supabase
-          .from('leaderboard_weekly')
-          .select('id, p_player_name, p_player_username, p_score_value, p_rounds, p_avg_distance, p_last_submit_date, p_fid')
+          .from(viewName)
+          .select('id, p_player_name, p_player_username, p_score_value, p_rounds, p_avg_distance, p_last_submit_date, p_fid, p_pfp_url')
           .order('p_score_value', { ascending: false })
           .limit(limit)
 
@@ -91,15 +94,16 @@ export default function WeeklyLeaderboard({
               timestamp: new Date(row.p_last_submit_date).getTime(),
               averageDistance: row.p_avg_distance || 0,
               fid: row.p_fid || null,
+              pfpUrl: row.p_pfp_url || undefined,
             }
           })
           
           setLeaderboardData(entries)
           
-          // Fetch PFPs for entries with FID (in background)
-          const entriesWithFid = entries.filter(e => e.fid)
-          if (entriesWithFid.length > 0) {
-            const pfpPromises = entriesWithFid.map(async (entry) => {
+          // Fetch PFPs for entries without pfp_url but with FID (in background)
+          const entriesNeedingPfp = entries.filter(e => e.fid && !e.pfpUrl)
+          if (entriesNeedingPfp.length > 0) {
+            const pfpPromises = entriesNeedingPfp.map(async (entry) => {
               if (!entry.fid) return null
               const userData = await fetchUserByFid(entry.fid)
               return { fid: entry.fid, pfpUrl: userData?.pfpUrl, username: userData?.username }
@@ -108,6 +112,7 @@ export default function WeeklyLeaderboard({
             const pfpResults = await Promise.all(pfpPromises)
             
             setLeaderboardData(prev => prev.map(entry => {
+              if (entry.pfpUrl) return entry // Already has pfp
               const pfpData = pfpResults.find(p => p?.fid === entry.fid)
               if (pfpData) {
                 return {
@@ -148,7 +153,7 @@ export default function WeeklyLeaderboard({
         <CardHeader className="border-b border-green-500/30 bg-green-500/5">
           <CardTitle className="flex items-center gap-2 text-green-400">
             <Trophy className="w-6 h-6 text-yellow-400" />
-            Weekly Leaderboard
+            {period === 'daily' ? 'Daily' : 'Weekly'} Leaderboard
           </CardTitle>
           <div className="text-sm text-green-300/70 mt-1">
             {getDateRangeText(period)}

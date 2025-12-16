@@ -107,6 +107,7 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
           p_rounds: results.length,
           p_average_distance: Math.round(averageDistance),
           p_fid: playerFid,
+          p_pfp_url: farcasterUser?.pfpUrl || null,
         })
 
         if (error) {

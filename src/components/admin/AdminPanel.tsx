@@ -45,6 +45,7 @@ interface LeaderboardEntry {
   player_name: string | null
   identity: string | null
   fid: number | null
+  pfp_url: string | null
   score_value: number
   weekly_rank: number
   week_start: string
@@ -92,6 +93,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
         player_name: entry.player_name,
         identity: entry.identity,
         fid: entry.fid,
+        pfp_url: entry.pfp_url,
         score_value: entry.score_value || 0,
         weekly_rank: idx + 1,
         week_start: weekStart.toISOString().split("T")[0],
@@ -301,8 +303,12 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
         {leaderboard.map((entry) => (
           <Card key={entry.id} className="p-4">
             <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[var(--accent)]/10 flex items-center justify-center">
-                <span className="text-xl font-bold text-[var(--accent)]">#{entry.weekly_rank}</span>
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[var(--accent)]/10 flex items-center justify-center overflow-hidden">
+                {entry.pfp_url ? (
+                  <img src={entry.pfp_url} alt={entry.player_name || "User"} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xl font-bold text-[var(--accent)]">#{entry.weekly_rank}</span>
+                )}
               </div>
 
               <div className="flex-1 min-w-0">

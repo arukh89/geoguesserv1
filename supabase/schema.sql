@@ -1,5 +1,5 @@
 -- Supabase schema for geoguesserv1
--- Project ref: izfjddrrcrefvaujkiql
+-- Project ref: ggjgxbqptiyuhioaoaru
 -- Last updated: 2024-12-16
 
 -- Enable required extensions
@@ -15,11 +15,12 @@ CREATE TABLE IF NOT EXISTS public.scores (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   player_name TEXT,
-  identity TEXT, -- wallet address or username
+  identity TEXT, -- wallet address for token rewards
   score_value INTEGER NOT NULL,
   rounds INTEGER,
   average_distance INTEGER,
-  fid INTEGER -- Farcaster user ID
+  fid INTEGER, -- Farcaster user ID
+  pfp_url TEXT -- Profile picture URL
 );
 
 -- admin_rewards table: records token payouts to winners
@@ -64,14 +65,15 @@ CREATE POLICY IF NOT EXISTS admin_rewards_insert_public ON public.admin_rewards 
 -- FUNCTIONS
 -- ============================================
 
--- Insert score function with FID parameter
+-- Insert score function with FID and PFP
 CREATE OR REPLACE FUNCTION public.insert_score(
   p_player_name TEXT DEFAULT NULL,
   p_identity TEXT DEFAULT NULL,
   p_score_value INTEGER DEFAULT 0,
   p_rounds INTEGER DEFAULT 1,
   p_average_distance INTEGER DEFAULT 0,
-  p_fid INTEGER DEFAULT NULL
+  p_fid INTEGER DEFAULT NULL,
+  p_pfp_url TEXT DEFAULT NULL
 ) RETURNS UUID AS $
 DECLARE
   new_score_id UUID;
@@ -89,16 +91,16 @@ BEGIN
   END IF;
   
   INSERT INTO public.scores (
-    player_name, identity, score_value, rounds, average_distance, fid
+    player_name, identity, score_value, rounds, average_distance, fid, pfp_url
   ) VALUES (
-    p_player_name, p_identity, p_score_value, p_rounds, p_average_distance, p_fid
+    p_player_name, p_identity, p_score_value, p_rounds, p_average_distance, p_fid, p_pfp_url
   ) RETURNING id INTO new_score_id;
   
   RETURN new_score_id;
 END;
 $ LANGUAGE plpgsql;
 
--- Get top leaderboard function with FID
+-- Get top leaderboard function
 CREATE OR REPLACE FUNCTION public.get_top_leaderboard(
   limit_count INTEGER DEFAULT 10
 ) RETURNS TABLE (
@@ -110,7 +112,8 @@ CREATE OR REPLACE FUNCTION public.get_top_leaderboard(
   average_distance INTEGER,
   created_at TIMESTAMPTZ,
   global_rank BIGINT,
-  fid INTEGER
+  fid INTEGER,
+  pfp_url TEXT
 ) AS $
 BEGIN
   RETURN QUERY
@@ -118,7 +121,7 @@ BEGIN
     s.id, s.player_name, s.identity, s.score_value, s.rounds,
     s.average_distance, s.created_at,
     ROW_NUMBER() OVER (ORDER BY s.score_value DESC) as global_rank,
-    s.fid
+    s.fid, s.pfp_url
   FROM public.scores s
   WHERE s.score_value > 0
   ORDER BY s.score_value DESC
@@ -145,7 +148,27 @@ $;
 -- VIEWS
 -- ============================================
 
--- Weekly leaderboard view with FID
+-- Daily leaderboard view
+CREATE OR REPLACE VIEW public.leaderboard_daily
+WITH (security_invoker = true)
+AS
+SELECT 
+  s.id,
+  s.player_name as p_player_name,
+  s.identity as p_player_username,
+  s.score_value as p_score_value,
+  s.rounds as p_rounds,
+  s.average_distance as p_avg_distance,
+  s.created_at::date as p_last_submit_date,
+  s.fid as p_fid,
+  s.pfp_url as p_pfp_url,
+  ROW_NUMBER() OVER (ORDER BY s.score_value DESC) as rank
+FROM public.scores s
+WHERE s.created_at >= CURRENT_DATE
+  AND s.created_at < CURRENT_DATE + interval '1 day'
+ORDER BY s.score_value DESC;
+
+-- Weekly leaderboard view
 CREATE OR REPLACE VIEW public.leaderboard_weekly
 WITH (security_invoker = true)
 AS
@@ -158,6 +181,7 @@ SELECT
   s.average_distance as p_avg_distance,
   s.created_at::date as p_last_submit_date,
   s.fid as p_fid,
+  s.pfp_url as p_pfp_url,
   ROW_NUMBER() OVER (ORDER BY s.score_value DESC) as rank
 FROM public.scores s
 WHERE s.created_at >= date_trunc('week', CURRENT_DATE)
@@ -180,6 +204,7 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $;
 -- PERMISSIONS
 -- ============================================
 
+GRANT SELECT ON public.leaderboard_daily TO anon, authenticated;
 GRANT SELECT ON public.leaderboard_weekly TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.insert_score TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.get_top_leaderboard TO anon, authenticated;
