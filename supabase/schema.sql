@@ -100,7 +100,7 @@ BEGIN
 END;
 $ LANGUAGE plpgsql;
 
--- Get top leaderboard function
+-- Get top leaderboard function: aggregate total score per user (FID)
 CREATE OR REPLACE FUNCTION public.get_top_leaderboard(
   limit_count INTEGER DEFAULT 10
 ) RETURNS TABLE (
@@ -118,13 +118,21 @@ CREATE OR REPLACE FUNCTION public.get_top_leaderboard(
 BEGIN
   RETURN QUERY
   SELECT
-    s.id, s.player_name, s.identity, s.score_value, s.rounds,
-    s.average_distance, s.created_at,
-    ROW_NUMBER() OVER (ORDER BY s.score_value DESC) as global_rank,
-    s.fid, s.pfp_url
+    (array_agg(s.id ORDER BY s.created_at DESC))[1] as id,
+    MAX(s.player_name) as player_name,
+    MAX(s.identity) as identity,
+    SUM(s.score_value)::INTEGER as score_value,
+    SUM(s.rounds)::INTEGER as rounds,
+    AVG(s.average_distance)::INTEGER as average_distance,
+    MAX(s.created_at) as created_at,
+    ROW_NUMBER() OVER (ORDER BY SUM(s.score_value) DESC) as global_rank,
+    s.fid,
+    MAX(s.pfp_url) as pfp_url
   FROM public.scores s
   WHERE s.score_value > 0
-  ORDER BY s.score_value DESC
+    AND s.fid IS NOT NULL
+  GROUP BY s.fid
+  ORDER BY score_value DESC
   LIMIT limit_count;
 END;
 $ LANGUAGE plpgsql;
@@ -148,45 +156,49 @@ $;
 -- VIEWS
 -- ============================================
 
--- Daily leaderboard view
+-- Daily leaderboard view: aggregate total score per FID
 CREATE OR REPLACE VIEW public.leaderboard_daily
 WITH (security_invoker = true)
 AS
 SELECT 
-  s.id,
-  s.player_name as p_player_name,
-  s.identity as p_player_username,
-  s.score_value as p_score_value,
-  s.rounds as p_rounds,
-  s.average_distance as p_avg_distance,
-  s.created_at::date as p_last_submit_date,
+  (array_agg(s.id ORDER BY s.created_at DESC))[1] as id,
+  MAX(s.player_name) as p_player_name,
+  MAX(s.identity) as p_player_username,
+  SUM(s.score_value)::INTEGER as p_score_value,
+  SUM(s.rounds)::INTEGER as p_rounds,
+  AVG(s.average_distance)::INTEGER as p_avg_distance,
+  MAX(s.created_at)::date as p_last_submit_date,
   s.fid as p_fid,
-  s.pfp_url as p_pfp_url,
-  ROW_NUMBER() OVER (ORDER BY s.score_value DESC) as rank
+  MAX(s.pfp_url) as p_pfp_url,
+  ROW_NUMBER() OVER (ORDER BY SUM(s.score_value) DESC) as rank
 FROM public.scores s
 WHERE s.created_at >= CURRENT_DATE
   AND s.created_at < CURRENT_DATE + interval '1 day'
-ORDER BY s.score_value DESC;
+  AND s.fid IS NOT NULL
+GROUP BY s.fid
+ORDER BY p_score_value DESC;
 
--- Weekly leaderboard view
+-- Weekly leaderboard view: aggregate total score per FID
 CREATE OR REPLACE VIEW public.leaderboard_weekly
 WITH (security_invoker = true)
 AS
 SELECT 
-  s.id,
-  s.player_name as p_player_name,
-  s.identity as p_player_username,
-  s.score_value as p_score_value,
-  s.rounds as p_rounds,
-  s.average_distance as p_avg_distance,
-  s.created_at::date as p_last_submit_date,
+  (array_agg(s.id ORDER BY s.created_at DESC))[1] as id,
+  MAX(s.player_name) as p_player_name,
+  MAX(s.identity) as p_player_username,
+  SUM(s.score_value)::INTEGER as p_score_value,
+  SUM(s.rounds)::INTEGER as p_rounds,
+  AVG(s.average_distance)::INTEGER as p_avg_distance,
+  MAX(s.created_at)::date as p_last_submit_date,
   s.fid as p_fid,
-  s.pfp_url as p_pfp_url,
-  ROW_NUMBER() OVER (ORDER BY s.score_value DESC) as rank
+  MAX(s.pfp_url) as p_pfp_url,
+  ROW_NUMBER() OVER (ORDER BY SUM(s.score_value) DESC) as rank
 FROM public.scores s
 WHERE s.created_at >= date_trunc('week', CURRENT_DATE)
   AND s.created_at < date_trunc('week', CURRENT_DATE) + interval '7 days'
-ORDER BY s.score_value DESC;
+  AND s.fid IS NOT NULL
+GROUP BY s.fid
+ORDER BY p_score_value DESC;
 
 -- ============================================
 -- REALTIME

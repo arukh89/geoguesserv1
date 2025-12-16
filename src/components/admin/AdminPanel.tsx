@@ -82,24 +82,22 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
       weekEnd.setDate(weekStart.getDate() + 6)
       weekEnd.setHours(23, 59, 59, 999)
 
+      // Use aggregated view - each user (FID) has ONE total score
       const { data, error } = await supabase
-        .from("scores")
+        .from("leaderboard_weekly")
         .select("*")
-        .gte("created_at", weekStart.toISOString())
-        .lte("created_at", weekEnd.toISOString())
-        .order("score_value", { ascending: false })
         .limit(10)
 
       if (error) throw error
 
-      const entries: LeaderboardEntry[] = data.map((entry, idx) => ({
+      const entries: LeaderboardEntry[] = (data || []).map((entry) => ({
         id: entry.id,
-        player_name: entry.player_name,
-        identity: entry.identity,
-        fid: entry.fid,
-        pfp_url: entry.pfp_url,
-        score_value: entry.score_value || 0,
-        weekly_rank: idx + 1,
+        player_name: entry.p_player_name,
+        identity: entry.p_player_username,
+        fid: entry.p_fid,
+        pfp_url: entry.p_pfp_url,
+        score_value: entry.p_score_value || 0,
+        weekly_rank: Number(entry.rank) || 0,
         week_start: weekStart.toISOString().split("T")[0],
         week_end: weekEnd.toISOString().split("T")[0],
       }))

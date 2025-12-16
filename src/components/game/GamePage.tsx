@@ -229,16 +229,13 @@ export function GamePage() {
     const appUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://geoguesserv1.vercel.app"
     
     // Cast text with score and call to action
-    const castText = `🌍 I scored ${totalScore.toLocaleString()} points in Farcaster Geo Explorer!
+    // Note: @ukhy89 must be at start of line or after space for proper mention
+    const castText = `🌍 I scored ${totalScore.toLocaleString()} points in Farcaster Geo Explorer by @ukhy89!
 
 🎮 Play, explore the world, and earn rewards!
 🏆 Top 10 weekly players win GEO tokens!
 
-Can you beat my score? 👇
-
-${appUrl}
-
-by @ukhy89`
+Can you beat my score? 👇`
 
     try {
       // Try Farcaster MiniApp SDK first (for Warpcast)
