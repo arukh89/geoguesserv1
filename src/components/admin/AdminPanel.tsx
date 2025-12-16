@@ -117,17 +117,13 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
         else if (rank === 3) suggestedAmounts[entry.id] = "250"
         else if (rank <= 10) suggestedAmounts[entry.id] = String(Math.round(150 - (rank - 4) * 12.5))
         
-        // If wallet already stored in database, use it
-        if (entry.identity && /^0x[a-fA-F0-9]{40}$/.test(entry.identity)) {
-          initialWallets[entry.id] = entry.identity
-        } 
-        // Otherwise, fetch from Neynar using FID
-        else if (entry.fid) {
+        // Always fetch from Neynar to get the correct Warplet address
+        if (entry.fid) {
           try {
             const neynarUser = await fetchUserByFid(entry.fid)
             if (neynarUser) {
-              // Prefer verified address (Warplet), fallback to custody address
-              const walletAddress = neynarUser.verifiedAddresses?.[0] || neynarUser.custodyAddress
+              // Use primaryEthAddress (Warplet) first, then verifiedAddresses, then custodyAddress
+              const walletAddress = neynarUser.primaryEthAddress || neynarUser.verifiedAddresses?.[0] || neynarUser.custodyAddress
               if (walletAddress && /^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
                 initialWallets[entry.id] = walletAddress
               }
@@ -135,6 +131,10 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
           } catch (e) {
             console.warn(`Failed to fetch wallet for FID ${entry.fid}:`, e)
           }
+        }
+        // Fallback to database identity if no FID or Neynar failed
+        if (!initialWallets[entry.id] && entry.identity && /^0x[a-fA-F0-9]{40}$/.test(entry.identity)) {
+          initialWallets[entry.id] = entry.identity
         }
       }))
       
@@ -153,7 +153,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
   }, [loadWeeklyLeaderboard])
 
   const getRecipientWallet = (entry: LeaderboardEntry): string => {
-    return wallets[entry.id] || entry.identity || ""
+    return wallets[entry.id] ?? ""
   }
 
   const isValidWallet = (wallet: string): boolean => {
@@ -340,11 +340,11 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
                     <Label htmlFor={`wallet-${entry.id}`} className="sr-only">Wallet</Label>
                     <Input
                       id={`wallet-${entry.id}`}
-                      value={wallets[entry.id] || entry.identity || ""}
+                      value={wallets[entry.id] ?? ""}
                       onChange={(e) => setWallets((prev) => ({ ...prev, [entry.id]: e.target.value }))}
                       placeholder="0x... wallet address"
                       disabled={sending[entry.id]}
-                      className={`font-mono text-xs ${!hasValidWallet && wallets[entry.id] ? 'border-red-500' : ''}`}
+                      className={`font-mono text-xs ${wallets[entry.id] && !isValidWallet(wallets[entry.id]) ? 'border-red-500' : ''}`}
                     />
                   </div>
                   <div className="w-24">
