@@ -16,9 +16,16 @@ interface FinalResultsProps {
   totalScore: number
   onPlayAgain: () => void
   onShare: () => void
+  gameMode: "classic" | "no-move" | "time-attack"
+  timeLimit?: number
 }
 
-export default function FinalResults({ results, totalScore, onPlayAgain, onShare }: FinalResultsProps) {
+// Only Time Attack 30s mode counts for leaderboard
+const LEADERBOARD_MODE = "time-attack"
+const LEADERBOARD_TIME_LIMIT = 30
+
+export default function FinalResults({ results, totalScore, onPlayAgain, onShare, gameMode, timeLimit }: FinalResultsProps) {
+  const isLeaderboardEligible = gameMode === LEADERBOARD_MODE && timeLimit === LEADERBOARD_TIME_LIMIT
   const { user: farcasterUser, loading: userLoading } = useFarcasterUser()
   const distances = results.map((r: RoundResult) => r.distance)
   const averageDistance = calculateAverageDistance(distances)
@@ -69,6 +76,12 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
   const [submissionMessage, setSubmissionMessage] = useState<string>('')
 
   useEffect(() => {
+    // Only submit scores for Time Attack 30s mode
+    if (!isLeaderboardEligible) {
+      setSubmissionStatus('idle')
+      return
+    }
+
     // Wait for user loading to complete before submitting
     if (userLoading) {
       setSubmissionStatus('submitting')
@@ -84,7 +97,7 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
     const submit = async () => {
       try {
         setSubmissionStatus('submitting')
-        setSubmissionMessage('Submitting your score...')
+        setSubmissionMessage('Submitting your score to leaderboard...')
         
         const supabase = createClient()
 
@@ -117,7 +130,7 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
         } else {
           console.log("Score submitted successfully:", data)
           setSubmissionStatus('success')
-          setSubmissionMessage('Score submitted successfully!')
+          setSubmissionMessage('Score submitted to leaderboard!')
         }
       } catch (err) {
         console.error("Failed to submit score to Supabase:", err)
@@ -128,7 +141,7 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
     
     submit()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userLoading])
+  }, [userLoading, isLeaderboardEligible])
 
   return (
     <div className="min-h-screen p-4 pt-16 md:pt-8 relative z-10">
@@ -168,7 +181,21 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
               </div>
             </motion.div>
 
-            {submissionStatus !== 'idle' && (
+            {!isLeaderboardEligible && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="p-4 rounded-lg border-2 border-yellow-500/50 bg-yellow-500/10 flex items-center gap-3"
+              >
+                <AlertCircle className="w-5 h-5 text-yellow-400" />
+                <div className="text-sm font-medium text-yellow-300">
+                  This score is not eligible for leaderboard. Play Time Attack 30s mode to compete for GEO token rewards!
+                </div>
+              </motion.div>
+            )}
+
+            {isLeaderboardEligible && submissionStatus !== 'idle' && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

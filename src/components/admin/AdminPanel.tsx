@@ -111,11 +111,21 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
       
       // Fetch wallet addresses from Neynar for entries without valid wallet
       await Promise.all(entries.map(async (entry) => {
+        // Weekly rewards: 375,000 GEO total (1.5M pool / 4 weeks)
         const rank = entry.weekly_rank
-        if (rank === 1) suggestedAmounts[entry.id] = "1000"
-        else if (rank === 2) suggestedAmounts[entry.id] = "500"
-        else if (rank === 3) suggestedAmounts[entry.id] = "250"
-        else if (rank <= 10) suggestedAmounts[entry.id] = String(Math.round(150 - (rank - 4) * 12.5))
+        const rewardsByRank: Record<number, string> = {
+          1: "100000",
+          2: "70000",
+          3: "50000",
+          4: "40000",
+          5: "30000",
+          6: "25000",
+          7: "20000",
+          8: "17000",
+          9: "13000",
+          10: "10000",
+        }
+        suggestedAmounts[entry.id] = rewardsByRank[rank] || "0"
         
         // Always fetch from Neynar to get the correct Warplet address
         if (entry.fid) {

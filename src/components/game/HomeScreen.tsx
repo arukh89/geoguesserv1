@@ -201,6 +201,22 @@ export default function HomeScreen({ onStart }: HomeScreenProps) {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
+                transition={{ delay: 1.7 }}
+                className="p-4 rounded-lg border-2 border-yellow-500/40 bg-[rgba(255,200,0,0.1)]"
+              >
+                <div className="flex items-center gap-3">
+                  <Trophy className="w-5 h-5 text-yellow-400" />
+                  <p className="text-sm font-medium text-green-200">
+                    <span className="font-bold text-yellow-300">Leaderboard & Rewards:</span> Only scores from{" "}
+                    <span className="font-bold text-yellow-300">Time Attack 30s</span> mode count for the weekly
+                    leaderboard. Top 10 players win GEO tokens every week!
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 1.8 }}
                 className="pt-4 text-center"
               >

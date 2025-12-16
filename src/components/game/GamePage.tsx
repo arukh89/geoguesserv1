@@ -356,7 +356,16 @@ by @ukhy89`
 
   if (gameState === "final") {
     const totalScore = results.reduce((sum, r) => sum + r.score, 0)
-    return <FinalResults results={results} totalScore={totalScore} onPlayAgain={playAgain} onShare={shareResults} />
+    return (
+      <FinalResults
+        results={results}
+        totalScore={totalScore}
+        onPlayAgain={playAgain}
+        onShare={shareResults}
+        gameMode={gameMode}
+        timeLimit={timeLimit}
+      />
+    )
   }
 
   return null
