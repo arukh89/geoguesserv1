@@ -32,31 +32,31 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
     if (percentage >= 90) {
       return {
         title: "Legendary",
-        message: "You're a geography master! Based on your score, you earned 0 FART tokens!",
+        message: "You're a geography master! Top 10 weekly players win GEO EXPLORER tokens!",
         emoji: "🌟",
       }
     } else if (percentage >= 75) {
       return {
         title: "Excellent",
-        message: "Impressive knowledge of the world! Based on your score, you earned 0 FART tokens!",
+        message: "Impressive knowledge of the world! Keep playing to climb the leaderboard!",
         emoji: "🎯",
       }
     } else if (percentage >= 60) {
       return {
         title: "Great",
-        message: "You know your way around! Based on your score, you earned 0 FART tokens.",
+        message: "You know your way around! Top 10 weekly players win rewards!",
         emoji: "👏",
       }
     } else if (percentage >= 40) {
       return {
         title: "Good",
-        message: "Nice effort, keep exploring! Based on your score, you earned 0 FART tokens.",
+        message: "Nice effort, keep exploring! Play more to improve your rank!",
         emoji: "👍",
       }
     } else {
       return {
         title: "Keep Learning",
-        message: "Every explorer starts somewhere! Based on your score, you earned 0 FART tokens.",
+        message: "Every explorer starts somewhere! Practice makes perfect!",
         emoji: "🗺️",
       }
     }

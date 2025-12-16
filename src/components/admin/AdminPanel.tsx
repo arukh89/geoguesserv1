@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createBrowserClient } from "@/lib/supabase/client"
-import { useSendTransaction, useAccount, useWalletClient } from "wagmi"
-import { parseEther, encodeFunctionData } from "viem"
+import { useAccount, useWalletClient } from "wagmi"
+import { parseUnits, encodeFunctionData } from "viem"
 import { toast } from "sonner"
 import { Loader2, Send, Trash2, AlertTriangle } from "lucide-react"
 import {
@@ -22,7 +22,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-const GEO_EXPLORER_ABI = [
+// GEO EXPLORER token on Base Mainnet
+const GEO_EXPLORER_CONTRACT = "0x9d7ff2e9ba89502776248acd6cbcb6734049fb07"
+const GEO_EXPLORER_DECIMALS = 18
+const BASE_CHAIN_ID = 8453
+
+const ERC20_ABI = [
   {
     inputs: [
       { name: "to", type: "address" },
@@ -56,24 +61,22 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [amounts, setAmounts] = useState<Record<string, string>>({})
+  const [wallets, setWallets] = useState<Record<string, string>>({})
   const [sending, setSending] = useState<Record<string, boolean>>({})
   const [deleting, setDeleting] = useState<Record<string, boolean>>({})
   const [clearingAll, setClearingAll] = useState(false)
 
-  const { isConnected } = useAccount()
+  const { isConnected, chainId } = useAccount()
   const { data: walletClient } = useWalletClient()
-  const { sendTransaction } = useSendTransaction()
   const supabase = createBrowserClient()
 
   const loadWeeklyLeaderboard = useCallback(async () => {
     try {
       setLoading(true)
-
       const now = new Date()
       const weekStart = new Date(now)
       weekStart.setDate(now.getDate() - now.getDay())
       weekStart.setHours(0, 0, 0, 0)
-
       const weekEnd = new Date(weekStart)
       weekEnd.setDate(weekStart.getDate() + 6)
       weekEnd.setHours(23, 59, 59, 999)
@@ -103,14 +106,20 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
       setLeaderboard(entries)
 
       const suggestedAmounts: Record<string, string> = {}
+      const initialWallets: Record<string, string> = {}
       entries.forEach((entry) => {
         const rank = entry.weekly_rank
         if (rank === 1) suggestedAmounts[entry.id] = "1000"
         else if (rank === 2) suggestedAmounts[entry.id] = "500"
         else if (rank === 3) suggestedAmounts[entry.id] = "250"
-        else if (rank <= 10) suggestedAmounts[entry.id] = String(150 - (rank - 4) * 12.5)
+        else if (rank <= 10) suggestedAmounts[entry.id] = String(Math.round(150 - (rank - 4) * 12.5))
+        
+        if (entry.identity && /^0x[a-fA-F0-9]{40}$/.test(entry.identity)) {
+          initialWallets[entry.id] = entry.identity
+        }
       })
       setAmounts(suggestedAmounts)
+      setWallets(initialWallets)
     } catch (error) {
       console.error("Failed to load leaderboard:", error)
       toast.error("Failed to load leaderboard")
@@ -123,91 +132,69 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
     loadWeeklyLeaderboard()
   }, [loadWeeklyLeaderboard])
 
+  const getRecipientWallet = (entry: LeaderboardEntry): string => {
+    return wallets[entry.id] || entry.identity || ""
+  }
+
+  const isValidWallet = (wallet: string): boolean => {
+    return /^0x[a-fA-F0-9]{40}$/.test(wallet)
+  }
+
   async function handleSendTokens(entry: LeaderboardEntry) {
     if (!isConnected) {
       toast.error("Please connect your wallet first")
       return
     }
-
+    if (chainId !== BASE_CHAIN_ID) {
+      toast.error("Please switch to Base network")
+      return
+    }
     const amount = amounts[entry.id]
     if (!amount || Number.parseFloat(amount) <= 0) {
       toast.error("Please enter a valid amount")
       return
     }
-
-    const walletAddress = entry.identity
-    if (!walletAddress || !/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
-      toast.error("Invalid wallet address")
+    const recipientWallet = getRecipientWallet(entry)
+    if (!isValidWallet(recipientWallet)) {
+      toast.error("Please enter a valid wallet address")
       return
     }
 
     try {
       setSending((prev) => ({ ...prev, [entry.id]: true }))
-
-      const contractAddress = (process.env.NEXT_PUBLIC_GEO_EXPLORER_CONTRACT_ADDRESS as `0x${string}`) ||
-        "0x9d7ff2e9ba89502776248acd6cbcb6734049fb07"
-
-      const data = encodeFunctionData({
-        abi: GEO_EXPLORER_ABI,
+      const transferData = encodeFunctionData({
+        abi: ERC20_ABI,
         functionName: "transfer",
-        args: [walletAddress as `0x${string}`, parseEther(amount)],
+        args: [recipientWallet as `0x${string}`, parseUnits(amount, GEO_EXPLORER_DECIMALS)],
       })
 
-      // Try ERC-5792 wallet_sendCalls with Base Builder Code attribution (Base)
-      try {
-        if (walletClient) {
-          const params: any = { calls: [{ to: contractAddress, data }], chainId: "eip155:8453" }
-
-          const res: any = await (walletClient as any).request({ method: "wallet_sendCalls", params: [params] })
-          const hash: string | undefined = res?.hash ?? (Array.isArray(res) ? res[0]?.hash : undefined)
-          if (hash) {
-            await supabase.from("admin_rewards").insert({
-              admin_fid: adminFid,
-              admin_wallet: adminWallet,
-              recipient_wallet: walletAddress,
-              recipient_name: entry.identity,
-              amount: Number.parseFloat(amount),
-              week_start: entry.week_start,
-              week_end: entry.week_end,
-              tx_hash: hash,
-            })
-            toast.success(`Successfully sent ${amount} Geo Explorer to ${walletAddress}`)
-            setSending((prev) => ({ ...prev, [entry.id]: false }))
-            return
-          }
-        }
-      } catch (e) {
-        console.warn("wallet_sendCalls failed, falling back", e)
+      if (!walletClient) {
+        toast.error("Wallet not connected")
+        setSending((prev) => ({ ...prev, [entry.id]: false }))
+        return
       }
 
-      // Fallback to legacy sendTransaction
-      sendTransaction(
-        { to: contractAddress, data },
-        {
-          onSuccess: async (hash) => {
-            await supabase.from("admin_rewards").insert({
-              admin_fid: adminFid,
-              admin_wallet: adminWallet,
-              recipient_wallet: walletAddress,
-              recipient_name: entry.identity,
-              amount: Number.parseFloat(amount),
-              week_start: entry.week_start,
-              week_end: entry.week_end,
-              tx_hash: hash,
-            })
-            toast.success(`Successfully sent ${amount} Geo Explorer to ${walletAddress}`)
-            setSending((prev) => ({ ...prev, [entry.id]: false }))
-          },
-          onError: (error) => {
-            console.error("Transaction failed:", error)
-            toast.error("Failed to send tokens")
-            setSending((prev) => ({ ...prev, [entry.id]: false }))
-          },
-        },
-      )
-    } catch (error) {
+      const hash = await walletClient.sendTransaction({
+        to: GEO_EXPLORER_CONTRACT as `0x${string}`,
+        data: transferData,
+      })
+
+      await supabase.from("admin_rewards").insert({
+        admin_fid: adminFid,
+        admin_wallet: adminWallet,
+        recipient_wallet: recipientWallet,
+        recipient_name: entry.player_name || entry.fid?.toString() || "Unknown",
+        amount: Number.parseFloat(amount),
+        week_start: entry.week_start,
+        week_end: entry.week_end,
+        tx_hash: hash,
+      })
+
+      toast.success(`Sent ${amount} GEO EXPLORER to ${recipientWallet.slice(0, 6)}...${recipientWallet.slice(-4)}`)
+    } catch (error: any) {
       console.error("Failed to send tokens:", error)
-      toast.error("Failed to send tokens")
+      toast.error(error?.message || "Failed to send tokens")
+    } finally {
       setSending((prev) => ({ ...prev, [entry.id]: false }))
     }
   }
@@ -215,14 +202,8 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
   async function handleDeleteScore(entryId: string) {
     try {
       setDeleting((prev) => ({ ...prev, [entryId]: true }))
-      
-      const { error } = await supabase
-        .from("scores")
-        .delete()
-        .eq("id", entryId)
-      
+      const { error } = await supabase.from("scores").delete().eq("id", entryId)
       if (error) throw error
-      
       toast.success("Score deleted successfully")
       loadWeeklyLeaderboard()
     } catch (error) {
@@ -236,15 +217,9 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
   async function handleClearAllScores() {
     try {
       setClearingAll(true)
-      
-      const { error } = await supabase
-        .from("scores")
-        .delete()
-        .neq("id", "00000000-0000-0000-0000-000000000000") // Delete all rows
-      
+      const { error } = await supabase.from("scores").delete().neq("id", "00000000-0000-0000-0000-000000000000")
       if (error) throw error
-      
-      toast.success("All leaderboard data cleared successfully")
+      toast.success("All leaderboard data cleared")
       loadWeeklyLeaderboard()
     } catch (error) {
       console.error("Failed to clear leaderboard:", error)
@@ -262,12 +237,16 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
     )
   }
 
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-green-400">Admin Panel</h2>
-          <p className="text-sm text-green-400/80 mt-1">Send Geo Explorer tokens to top 10 weekly winners</p>
+          <p className="text-sm text-green-400/80 mt-1">Send GEO EXPLORER tokens (Base Network)</p>
+          {chainId && chainId !== BASE_CHAIN_ID && (
+            <p className="text-sm text-red-400 mt-1">⚠️ Switch to Base network</p>
+          )}
         </div>
         <div className="flex gap-2">
           <Button onClick={loadWeeklyLeaderboard} variant="secondary" size="sm">Refresh</Button>
@@ -282,17 +261,13 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle className="flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-red-500" />
-                  Clear All Leaderboard Data?
+                  Clear All Leaderboard?
                 </AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently delete ALL scores from the leaderboard. This action cannot be undone.
-                </AlertDialogDescription>
+                <AlertDialogDescription>This will delete ALL scores. Cannot be undone.</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleClearAllScores} className="bg-red-600 hover:bg-red-700">
-                  Yes, Clear All
-                </AlertDialogAction>
+                <AlertDialogAction onClick={handleClearAllScores} className="bg-red-600 hover:bg-red-700">Yes, Clear All</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -300,82 +275,90 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
       </div>
 
       <div className="grid gap-4">
-        {leaderboard.map((entry) => (
-          <Card key={entry.id} className="p-4">
-            <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[var(--accent)]/10 flex items-center justify-center overflow-hidden">
-                {entry.pfp_url ? (
-                  <img src={entry.pfp_url} alt={entry.player_name || "User"} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xl font-bold text-[var(--accent)]">#{entry.weekly_rank}</span>
-                )}
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-green-300 font-medium">
-                    {entry.player_name || "Anonymous"}
-                  </span>
-                  {entry.fid && (
-                    <span className="text-xs bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded">
-                      FID: {entry.fid}
-                    </span>
-                  )}
+        {leaderboard.map((entry) => {
+          const recipientWallet = getRecipientWallet(entry)
+          const hasValidWallet = isValidWallet(recipientWallet)
+          
+          return (
+            <Card key={entry.id} className="p-4">
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[var(--accent)]/10 flex items-center justify-center overflow-hidden">
+                    {entry.pfp_url ? (
+                      <img src={entry.pfp_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xl font-bold text-[var(--accent)]">#{entry.weekly_rank}</span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-green-300 font-medium">{entry.player_name || "Anonymous"}</span>
+                      {entry.fid && <span className="text-xs bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded">FID: {entry.fid}</span>}
+                    </div>
+                    <div className="text-sm text-green-400/80">Score: {entry.score_value.toLocaleString()} pts</div>
+                  </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="sm" disabled={deleting[entry.id]} className="text-red-400 hover:text-red-300 hover:bg-red-900/20">
+                        {deleting[entry.id] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this score?</AlertDialogTitle>
+                        <AlertDialogDescription>Delete score for {entry.player_name || "this user"}?</AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDeleteScore(entry.id)} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
-                <div className="font-mono text-xs text-green-400/60 truncate">
-                  {entry.identity || "No wallet"}
+                <div className="flex items-center gap-2 pl-16">
+                  <div className="flex-1">
+                    <Label htmlFor={`wallet-${entry.id}`} className="sr-only">Wallet</Label>
+                    <Input
+                      id={`wallet-${entry.id}`}
+                      value={wallets[entry.id] || entry.identity || ""}
+                      onChange={(e) => setWallets((prev) => ({ ...prev, [entry.id]: e.target.value }))}
+                      placeholder="0x... wallet address"
+                      disabled={sending[entry.id]}
+                      className={`font-mono text-xs ${!hasValidWallet && wallets[entry.id] ? 'border-red-500' : ''}`}
+                    />
+                  </div>
+                  <div className="w-24">
+                    <Label htmlFor={`amount-${entry.id}`} className="sr-only">Amount</Label>
+                    <Input
+                      id={`amount-${entry.id}`}
+                      type="number"
+                      value={amounts[entry.id] || ""}
+                      onChange={(e) => setAmounts((prev) => ({ ...prev, [entry.id]: e.target.value }))}
+                      placeholder="Amount"
+                      disabled={sending[entry.id]}
+                      className="text-right"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => handleSendTokens(entry)}
+                    disabled={sending[entry.id] || !amounts[entry.id] || !hasValidWallet || chainId !== BASE_CHAIN_ID}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    {sending[entry.id] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    Send
+                  </Button>
                 </div>
-                <div className="text-sm text-green-400/80">Score: {entry.score_value.toLocaleString()}</div>
               </div>
-
-              <div className="flex items-center gap-2">
-                <div className="w-32">
-                  <Label htmlFor={`amount-${entry.id}`} className="sr-only">Amount</Label>
-                  <Input id={`amount-${entry.id}`} type="number" value={amounts[entry.id] || ""} onChange={(e) => setAmounts((prev) => ({ ...prev, [entry.id]: e.target.value }))} placeholder="Amount" disabled={sending[entry.id]} className="text-right" />
-                </div>
-                <Button 
-                  onClick={() => handleSendTokens(entry)} 
-                  disabled={sending[entry.id] || !amounts[entry.id] || !entry.identity || !/^0x[a-fA-F0-9]{40}$/.test(entry.identity)} 
-                  size="sm" 
-                  className="gap-2"
-                  title={!entry.identity ? "No wallet address" : !/^0x[a-fA-F0-9]{40}$/.test(entry.identity) ? "Invalid wallet address" : "Send tokens"}
-                >
-                  {sending[entry.id] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  Send
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="sm" disabled={deleting[entry.id]} className="text-red-400 hover:text-red-300 hover:bg-red-900/20">
-                      {deleting[entry.id] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete this score?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will permanently delete the score for {entry.player_name || entry.identity || "this user"}. This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDeleteScore(entry.id)} className="bg-red-600 hover:bg-red-700">
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-          </Card>
-        ))}
-
+            </Card>
+          )
+        })}
         {leaderboard.length === 0 && (
           <Card className="p-8 text-center">
-            <p className="text-[var(--text-secondary)]">No leaderboard entries for this week yet.</p>
+            <p className="text-[var(--text-secondary)]">No entries this week yet.</p>
           </Card>
         )}
       </div>
     </div>
   )
 }
-
