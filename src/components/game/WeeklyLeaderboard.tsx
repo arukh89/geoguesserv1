@@ -1,18 +1,27 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trophy, TrendingUp, Calendar } from "lucide-react"
+import { Trophy, TrendingUp, Calendar, User } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
-import { formatUsernameForDisplay } from "@/lib/utils/formatUsernameFarcaster"
-import type { LeaderboardEntry } from "@/lib/game/types"
+import { fetchUserByFid } from "@/lib/neynar/client"
+
+interface LeaderboardEntryWithPfp {
+  id: string
+  playerName: string
+  score: number
+  rounds: number
+  timestamp: number
+  averageDistance: number
+  fid: number | null
+  pfpUrl?: string
+}
 
 interface WeeklyLeaderboardProps {
   period?: "daily" | "weekly" | "monthly" | "all-time"
   className?: string
-  showPersonalScore?: boolean
   limit?: number
 }
 
@@ -38,11 +47,10 @@ const getDateRangeText = (period: string): string => {
 export default function WeeklyLeaderboard({
   period = "weekly",
   className = "",
-  showPersonalScore = true,
   limit = 10
 }: WeeklyLeaderboardProps) {
   const { user: farcasterUser } = useFarcasterUser()
-  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([])
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntryWithPfp[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -53,14 +61,18 @@ export default function WeeklyLeaderboard({
         
         const { data, error } = await supabase
           .from('leaderboard_weekly')
-          .select('p_player_name, p_player_username, p_score_value, p_rounds, p_avg_distance, p_last_submit_date, p_fid')
+          .select('id, p_player_name, p_player_username, p_score_value, p_rounds, p_avg_distance, p_last_submit_date, p_fid')
           .order('p_score_value', { ascending: false })
           .limit(limit)
 
         if (error) {
           console.error("Error fetching leaderboard:", error)
-        } else if (data) {
-          setLeaderboardData(data.map((row: any) => ({
+          return
+        }
+        
+        if (data) {
+          // Map initial data
+          const entries: LeaderboardEntryWithPfp[] = data.map((row: any) => ({
             id: row.id,
             playerName: row.p_player_name || row.p_player_username || "Anonymous",
             score: row.p_score_value || 0,
@@ -68,7 +80,33 @@ export default function WeeklyLeaderboard({
             timestamp: new Date(row.p_last_submit_date).getTime(),
             averageDistance: row.p_avg_distance || 0,
             fid: row.p_fid || null,
-          })))
+          }))
+          
+          setLeaderboardData(entries)
+          
+          // Fetch PFPs for entries with FID (in background)
+          const entriesWithFid = entries.filter(e => e.fid)
+          if (entriesWithFid.length > 0) {
+            const pfpPromises = entriesWithFid.map(async (entry) => {
+              if (!entry.fid) return null
+              const userData = await fetchUserByFid(entry.fid)
+              return { fid: entry.fid, pfpUrl: userData?.pfpUrl, username: userData?.username }
+            })
+            
+            const pfpResults = await Promise.all(pfpPromises)
+            
+            setLeaderboardData(prev => prev.map(entry => {
+              const pfpData = pfpResults.find(p => p?.fid === entry.fid)
+              if (pfpData) {
+                return {
+                  ...entry,
+                  pfpUrl: pfpData.pfpUrl,
+                  playerName: pfpData.username ? `@${pfpData.username}` : entry.playerName
+                }
+              }
+              return entry
+            }))
+          }
         }
       } catch (err) {
         console.error("Error in fetchLeaderboardData:", err)
@@ -117,7 +155,7 @@ export default function WeeklyLeaderboard({
           ) : (
             <div className="space-y-3">
               {leaderboardData.map((entry, index) => {
-                const isCurrentUserEntry = farcasterUser?.fid && (entry as any).fid === farcasterUser.fid
+                const isCurrentUserEntry = farcasterUser?.fid && entry.fid === farcasterUser.fid
                 
                 return (
                   <motion.div
@@ -131,7 +169,8 @@ export default function WeeklyLeaderboard({
                         : "border-green-500/20 bg-green-500/5"
                     }`}
                   >
-                    <div className="flex-shrink-0 w-14 text-center">
+                    {/* Rank */}
+                    <div className="flex-shrink-0 w-12 text-center">
                       <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center text-lg font-bold ${
                         index < 3 ? "bg-green-500/20 text-green-300" : "bg-green-500/10 text-green-400/70"
                       }`}>
@@ -139,14 +178,30 @@ export default function WeeklyLeaderboard({
                       </div>
                     </div>
                     
-                    <div className="flex-grow min-w-0">
+                    {/* PFP */}
+                    <div className="flex-shrink-0 w-12">
+                      {entry.pfpUrl ? (
+                        <img 
+                          src={entry.pfpUrl} 
+                          alt="" 
+                          className="w-10 h-10 rounded-full object-cover border-2 border-green-500/30"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center border-2 border-green-500/30">
+                          <User className="w-5 h-5 text-green-400/50" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Name & Stats */}
+                    <div className="flex-grow min-w-0 ml-2">
                       <div className="flex items-center flex-wrap gap-2">
                         <span className="text-lg font-bold text-green-300 truncate">
                           {entry.playerName}
                         </span>
-                        {(entry as any).fid && (
+                        {entry.fid && (
                           <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-mono">
-                            FID: {(entry as any).fid}
+                            FID: {entry.fid}
                           </span>
                         )}
                         {isCurrentUserEntry && (
@@ -167,6 +222,7 @@ export default function WeeklyLeaderboard({
                       </div>
                     </div>
                     
+                    {/* Score */}
                     <div className="text-right">
                       <div className="text-2xl font-bold text-green-300">
                         {entry.score.toLocaleString()}

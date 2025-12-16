@@ -5,6 +5,8 @@
  * Docs: https://docs.neynar.com/docs/getting-started-with-neynar
  */
 
+// For client-side usage, we need NEXT_PUBLIC_ prefix
+// Fallback to NEYNAR_API_DOCS for development (limited rate)
 const NEYNAR_API_KEY = process.env.NEXT_PUBLIC_NEYNAR_API_KEY || 'NEYNAR_API_DOCS'
 const NEYNAR_BASE_URL = 'https://api.neynar.com/v2/farcaster'
 
