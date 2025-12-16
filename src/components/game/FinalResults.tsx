@@ -2,7 +2,7 @@ import React from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trophy, MapPin, Target, Share2, RotateCcw, TrendingUp, CheckCircle, AlertCircle } from "lucide-react"
+import { Trophy, MapPin, Target, Share2, RotateCcw, TrendingUp, CheckCircle, AlertCircle, Home } from "lucide-react"
 import type { RoundResult } from "@/lib/game/types"
 import { formatDistance, calculateAverageDistance } from "@/lib/game/scoring"
 import Leaderboard from "./Leaderboard"
@@ -322,6 +322,15 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
               >
                 <RotateCcw className="w-5 h-5 mr-2" />
                 Play Again
+              </Button>
+              <Button
+                onClick={onPlayAgain}
+                size="lg"
+                variant="ghost"
+                className="sm:flex-none h-14 px-6 text-lg font-semibold text-green-400 hover:text-green-300 hover:bg-green-500/10"
+              >
+                <Home className="w-5 h-5 mr-2" />
+                Home
               </Button>
             </motion.div>
           </CardContent>
