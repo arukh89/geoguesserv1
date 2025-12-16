@@ -7,10 +7,10 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variants = {
   default:
-    "bg-[rgba(0,255,65,0.12)] text-[var(--accent)] border-[rgba(0,255,65,0.4)] hover:bg-[rgba(0,255,65,0.18)] font-semibold",
+    "bg-[rgba(0,255,65,0.15)] text-green-300 border-[rgba(0,255,65,0.5)] hover:bg-[rgba(0,255,65,0.25)] font-semibold",
   secondary:
-    "bg-transparent text-[var(--accent)] border-[rgba(0,255,65,0.3)] hover:bg-[rgba(0,255,65,0.08)] font-medium",
-  outline: "bg-transparent text-[var(--accent)] border-[var(--accent)] hover:bg-[rgba(0,255,65,0.08)] font-medium",
+    "bg-transparent text-green-300 border-[rgba(0,255,65,0.4)] hover:bg-[rgba(0,255,65,0.1)] font-medium",
+  outline: "bg-transparent text-green-300 border-green-400 hover:bg-[rgba(0,255,65,0.1)] font-medium",
 } as const
 
 const sizes = {

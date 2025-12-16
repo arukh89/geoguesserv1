@@ -1,11 +1,12 @@
+"use client"
+
 import React, { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trophy, TrendingUp, Users, Calendar } from "lucide-react"
-// import { useToast } from "@/hooks/use-toast"
+import { Trophy, TrendingUp, Calendar } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
-import { formatUsernameForDisplay, formatUsernameForCompactDisplay, formatUsernameWithFid, isFarcasterUser, type FarcasterUser } from "@/lib/utils/formatUsernameFarcaster"
+import { formatUsernameForDisplay } from "@/lib/utils/formatUsernameFarcaster"
 import type { LeaderboardEntry } from "@/lib/game/types"
 
 interface WeeklyLeaderboardProps {
@@ -15,9 +16,6 @@ interface WeeklyLeaderboardProps {
   limit?: number
 }
 
-/**
- * Gets the date range text based on the period selected
- */
 const getDateRangeText = (period: string): string => {
   switch (period) {
     case "daily":
@@ -27,12 +25,9 @@ const getDateRangeText = (period: string): string => {
       const weekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay())
       const weekEnd = new Date(weekStart)
       weekEnd.setDate(weekStart.getDate() + 6)
-      return `${weekStart.toLocaleDateString("en-US", { month: "short" })} - ${weekEnd.toLocaleDateString("en-US", { month: "short" })}`
+      return `${weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${weekEnd.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
     case "monthly":
-      const now = new Date()
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-      return `${monthStart.toLocaleDateString("en-US", { month: "short" })} - ${monthEnd.toLocaleDateString("en-US", { month: "short" })}`
+      return new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })
     case "all-time":
       return "All Time"
     default:
@@ -50,43 +45,18 @@ export default function WeeklyLeaderboard({
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  const userScore = 0 // Reset this since we don't have user scores in this context
-  const isUserOnLeaderboard = leaderboardData.some(entry => entry.playerName === formatUsernameForDisplay(farcasterUser))
-
   useEffect(() => {
     const fetchLeaderboardData = async () => {
       try {
         setIsLoading(true)
         const supabase = createClient()
         
-        let query = supabase
+        const { data, error } = await supabase
           .from('leaderboard_weekly')
           .select('p_player_name, p_player_username, p_score_value, p_rounds, p_avg_distance, p_last_submit_date, p_fid')
           .order('p_score_value', { ascending: false })
           .limit(limit)
-        
-        // Filter by period if specified
-        if (period === "daily") {
-          const today = new Date()
-          const todayString = today.toISOString().split('T')[0]
-          query = query.eq('p_last_submit_date', todayString)
-        } else if (period === "weekly") {
-          // Get current week's Monday (start of week)
-          const today = new Date()
-          const monday = new Date(today)
-          monday.setDate(today.getDate() - today.getDay() + 1)
-          const mondayString = monday.toISOString().split('T')[0]
-          query = query.gte('p_last_submit_date', mondayString)
-        } else if (period === "monthly") {
-          // Get current month's start (1st day of month)
-          const now = new Date()
-          const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
-          const firstDayString = firstDay.toISOString().split('T')[0]
-          query = query.gte('p_last_submit_date', firstDayString)
-        }
 
-        const { data, error } = await query
-        
         if (error) {
           console.error("Error fetching leaderboard:", error)
         } else if (data) {
@@ -117,13 +87,6 @@ export default function WeeklyLeaderboard({
     return null
   }
 
-  const getRankBadgeColor = (rank: number): string => {
-    if (rank === 1) return "bg-yellow-100 text-yellow-800"
-    if (rank === 2) return "bg-gray-100 text-gray-800"
-    if (rank === 3) return "bg-orange-100 text-orange-800"
-    return "bg-gray-100 text-gray-600"
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -131,156 +94,85 @@ export default function WeeklyLeaderboard({
       transition={{ duration: 0.5 }}
       className={`max-w-6xl mx-auto ${className}`}
     >
-      <Card className="shadow-2xl overflow-hidden">
-        <CardHeader className="border-b mx-border">
-          <CardTitle className="flex items-center gap-2">
+      <Card className="shadow-2xl overflow-hidden bg-black/80 border-green-500/30">
+        <CardHeader className="border-b border-green-500/30 bg-green-500/5">
+          <CardTitle className="flex items-center gap-2 text-green-400">
             <Trophy className="w-6 h-6 text-yellow-400" />
             Weekly Leaderboard
           </CardTitle>
-          
-          <div className="ml-auto flex gap-2">
-            <div className="text-sm text-gray-600">
-              {getDateRangeText(period)}
-            </div>
-            
-            <div className="flex gap-2">
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-semibold cursor-pointer ${
-                  period === "daily" ? "bg-blue-100 text-blue-800" :
-                  period === "weekly" ? "bg-green-100 text-green-800" :
-                  period === "monthly" ? "bg-purple-100 text-purple-800" :
-                  "bg-gray-100 text-gray-800"
-                }`}
-              >
-                Daily
-              </span>
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-semibold cursor-pointer ${
-                  period === "daily" ? "bg-blue-100 text-blue-800" :
-                  period === "weekly" ? "bg-green-100 text-green-800" :
-                  period === "monthly" ? "bg-purple-100 text-purple-800" :
-                  "bg-gray-100 text-gray-800"
-                }`}
-              >
-                Weekly
-              </span>
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-semibold cursor-pointer ${
-                  period === "daily" ? "bg-blue-100 text-blue-800" :
-                  period === "weekly" ? "bg-green-100 text-green-800" :
-                  period === "monthly" ? "bg-purple-100 text-purple-800" :
-                  "bg-gray-100 text-gray-800"
-                }`}
-              >
-                Monthly
-              </span>
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-semibold cursor-pointer ${
-                  period === "daily" ? "bg-blue-100 text-blue-800" :
-                  period === "weekly" ? "bg-green-100 text-green-800" :
-                  period === "monthly" ? "bg-purple-100 text-purple-800" :
-                  "bg-gray-100 text-gray-800"
-                }`}
-              >
-                All Time
-              </span>
-            </div>
+          <div className="text-sm text-green-300/70 mt-1">
+            {getDateRangeText(period)}
           </div>
         </CardHeader>
 
         <CardContent className="p-6 space-y-4">
-          {showPersonalScore && farcasterUser && (
-            <div className="p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg border border-purple-200">
-              <div className="text-center text-purple-800">
-                <div className="text-sm font-medium mb-1">Your Score</div>
-                <div className="text-4xl font-bold">
-                  {userScore.toLocaleString()}
-                </div>
-                <div className="text-sm text-purple-600 mt-1">
-                  {formatUsernameForDisplay(farcasterUser)}
-                </div>
-                <div className="text-xs text-purple-500 mt-2">
-                  {!isUserOnLeaderboard && "Not on this week's leaderboard. Keep playing to get on top!"}
-                </div>
-              </div>
-            </div>
-          )}
-
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-200 border-t-purple-700"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500/30 border-t-green-400"></div>
             </div>
           ) : leaderboardData.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-green-400/70">
               No scores yet this week. Be the first to play!
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {leaderboardData.map((entry, index) => {
-                const isCurrentUserEntry = entry.playerName === formatUsernameForDisplay(farcasterUser)
+                const isCurrentUserEntry = farcasterUser?.fid && (entry as any).fid === farcasterUser.fid
                 
                 return (
                   <motion.div
+                    key={entry.id || index}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
                     className={`flex items-center p-4 rounded-lg border ${
                       isCurrentUserEntry
-                        ? "border-green-200 bg-green-50"
-                        : "border-gray-200"
+                        ? "border-green-400 bg-green-500/10"
+                        : "border-green-500/20 bg-green-500/5"
                     }`}
                   >
-                    <div className="flex-shrink-0 w-12 text-center">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold ${getRankBadgeColor(index + 1)}`}>
-                        {getRankIcon(index + 1)}
+                    <div className="flex-shrink-0 w-14 text-center">
+                      <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center text-lg font-bold ${
+                        index < 3 ? "bg-green-500/20 text-green-300" : "bg-green-500/10 text-green-400/70"
+                      }`}>
+                        {getRankIcon(index + 1) || `#${index + 1}`}
                       </div>
                     </div>
                     
-                    <div className="flex-grow">
-                      <div className="flex items-center gap-3">
-                        <div className="text-center">
-                          <div className="font-semibold text-gray-900">
-                            #{index + 1}
-                          </div>
-                        </div>
-                        
-                        <div className="flex-grow">
-                          <div className="flex items-center flex-wrap gap-1">
-                            <div className="text-lg font-bold text-gray-900 truncate max-w-[180px]">
-                              {entry.playerName}
-                            </div>
-                            {(entry as any).fid && (
-                              <div className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-mono">
-                                FID: {(entry as any).fid}
-                              </div>
-                            )}
-                            {isCurrentUserEntry && (
-                              <div className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
-                                YOU
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                    <div className="flex-grow min-w-0">
+                      <div className="flex items-center flex-wrap gap-2">
+                        <span className="text-lg font-bold text-green-300 truncate">
+                          {entry.playerName}
+                        </span>
+                        {(entry as any).fid && (
+                          <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-mono">
+                            FID: {(entry as any).fid}
+                          </span>
+                        )}
+                        {isCurrentUserEntry && (
+                          <span className="text-xs bg-green-400 text-black px-2 py-0.5 rounded-full font-bold">
+                            YOU
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-green-400/70">
+                        <span className="flex items-center gap-1">
+                          <TrendingUp className="w-3 h-3" />
+                          {entry.rounds || 0} rounds
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {entry.averageDistance ? `~${Math.round(entry.averageDistance)}km avg` : "N/A"}
+                        </span>
                       </div>
                     </div>
                     
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-900">
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-green-300">
                         {entry.score.toLocaleString()}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-xs text-green-400/70">
                         points
-                      </div>
-                      
-                      <div className="flex justify-center gap-2 mt-1 text-xs text-gray-500">
-                        <div className="flex items-center">
-                          <TrendingUp className="w-3 h-3 text-green-500" />
-                          {entry.rounds || 0} rounds
-                        </div>
-                        <div className="flex items-center">
-                          <Calendar className="w-3 h-3 text-blue-500" />
-                          {entry.averageDistance ? `avg ${entry.averageDistance.toFixed(0)}km` : "N/A"}
-                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -289,14 +181,8 @@ export default function WeeklyLeaderboard({
             </div>
           )}
           
-          <div className="flex justify-center mt-6">
-            <div className="text-sm text-gray-500">
-              {showPersonalScore ? (
-                <span>Showing top {limit} scores for {getDateRangeText(period)}</span>
-              ) : (
-                <span>Showing top {limit} scores for all time</span>
-              )}
-            </div>
+          <div className="text-center mt-6 text-sm text-green-400/60">
+            Showing top {limit} scores for {getDateRangeText(period)}
           </div>
         </CardContent>
       </Card>
