@@ -214,8 +214,8 @@ export function useFarcasterUser() {
         }
       }
 
-      // 5. If we have FID but missing data, fetch from Neynar
-      if (resolved?.fid && (!resolved.username || !resolved.pfpUrl)) {
+      // 5. If we have FID but missing data (username, pfp, or wallet), fetch from Neynar
+      if (resolved?.fid && (!resolved.username || !resolved.pfpUrl || !resolved.verifiedAddresses?.length)) {
         try {
           const neynarUser = await fetchUserByFid(resolved.fid)
           if (neynarUser) {
@@ -224,6 +224,8 @@ export function useFarcasterUser() {
               username: resolved.username || neynarUser.username,
               displayName: resolved.displayName || neynarUser.displayName,
               pfpUrl: resolved.pfpUrl || neynarUser.pfpUrl,
+              custodyAddress: resolved.custodyAddress || neynarUser.custodyAddress,
+              verifiedAddresses: resolved.verifiedAddresses?.length ? resolved.verifiedAddresses : neynarUser.verifiedAddresses,
             }
           }
         } catch {}

@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { fetchUserByFid } from "@/lib/neynar/client"
 
 // GEO EXPLORER token on Base Mainnet
 const GEO_EXPLORER_CONTRACT = "0x9d7ff2e9ba89502776248acd6cbcb6734049fb07"
@@ -107,17 +108,36 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
 
       const suggestedAmounts: Record<string, string> = {}
       const initialWallets: Record<string, string> = {}
-      entries.forEach((entry) => {
+      
+      // Fetch wallet addresses from Neynar for entries without valid wallet
+      await Promise.all(entries.map(async (entry) => {
         const rank = entry.weekly_rank
         if (rank === 1) suggestedAmounts[entry.id] = "1000"
         else if (rank === 2) suggestedAmounts[entry.id] = "500"
         else if (rank === 3) suggestedAmounts[entry.id] = "250"
         else if (rank <= 10) suggestedAmounts[entry.id] = String(Math.round(150 - (rank - 4) * 12.5))
         
+        // If wallet already stored in database, use it
         if (entry.identity && /^0x[a-fA-F0-9]{40}$/.test(entry.identity)) {
           initialWallets[entry.id] = entry.identity
+        } 
+        // Otherwise, fetch from Neynar using FID
+        else if (entry.fid) {
+          try {
+            const neynarUser = await fetchUserByFid(entry.fid)
+            if (neynarUser) {
+              // Prefer verified address (Warplet), fallback to custody address
+              const walletAddress = neynarUser.verifiedAddresses?.[0] || neynarUser.custodyAddress
+              if (walletAddress && /^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+                initialWallets[entry.id] = walletAddress
+              }
+            }
+          } catch (e) {
+            console.warn(`Failed to fetch wallet for FID ${entry.fid}:`, e)
+          }
         }
-      })
+      }))
+      
       setAmounts(suggestedAmounts)
       setWallets(initialWallets)
     } catch (error) {
