@@ -210,12 +210,15 @@ export function GamePage() {
   const nextRound = () => {
     if (currentRound < locations.length - 1) {
       setLoadingRound(true)
-      setCurrentRound(currentRound + 1)
-      setGameState("playing")
       setShowMap(false)
-      if (typeof timeLimit === "number") setTimeLeft(timeLimit)
-      // Brief delay to show loading, then hide
-      setTimeout(() => setLoadingRound(false), 500)
+      // Delay state changes to ensure loading shows
+      setTimeout(() => {
+        setCurrentRound(currentRound + 1)
+        setGameState("playing")
+        if (typeof timeLimit === "number") setTimeLeft(timeLimit)
+        // Hide loading after panorama has time to start loading
+        setTimeout(() => setLoadingRound(false), 1000)
+      }, 100)
     } else {
       setGameState("final")
     }

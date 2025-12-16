@@ -46,19 +46,29 @@ function FitBounds() {
 }
 
 export default function LeafletMap({ onMapClick, markerPosition, disabled }: LeafletMapProps) {
+  // Limit map bounds to prevent world repeat
+  const maxBounds: L.LatLngBoundsExpression = [
+    [-85, -180], // Southwest
+    [85, 180],   // Northeast
+  ]
+
   return (
     <MapContainer
       center={[20, 0]}
       zoom={2}
       minZoom={2}
       maxZoom={18}
-      style={{ width: "100%", height: "100%", background: "#000" }}
-      worldCopyJump={true}
+      maxBounds={maxBounds}
+      maxBoundsViscosity={1.0}
+      style={{ width: "100%", height: "100%", background: "#1a1a2e" }}
+      worldCopyJump={false}
     >
-      {/* OpenStreetMap tiles with labels */}
+      {/* CartoDB Voyager - clean map with country/city labels */}
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png"
+        subdomains="abcd"
+        noWrap={true}
       />
       
       <MapClickHandler onMapClick={onMapClick} disabled={disabled} />
