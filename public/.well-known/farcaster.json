@@ -32,7 +32,8 @@
                     "heroImageUrl":  "https://geoguesserv1.vercel.app/heroImageUrl.png",
                     "screenshotUrls":  [
                                            "https://geoguesserv1.vercel.app/screenshotUrls.png"
-                                       ]
+                                       ],
+                    "webhookUrl":  "https://geoguesserv1.vercel.app/api/webhook"
                 },
     "baseBuilder":  {
                         "ownerAddress":  "0xAFf0244070a126525D45D334F2e3A3670F1A7CD1"

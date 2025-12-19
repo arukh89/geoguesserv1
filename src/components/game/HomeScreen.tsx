@@ -4,7 +4,8 @@ import React from "react"
 import { useEffect, useRef, useState, useCallback } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Globe, MapPin, Trophy, Target, Gift, Lock, Loader2 } from "lucide-react"
+import { Globe, MapPin, Trophy, Target, Gift, Lock, Loader2, Bell } from "lucide-react"
+import { EnableNotifications } from "@/components/notifications/EnableNotifications"
 import { Button } from "@/components/ui/button"
 import GameModeDropdown from "./GameModeDropdown"
 import ClaimRewards from "./ClaimRewards"
@@ -346,10 +347,22 @@ export default function HomeScreen({ onStart }: HomeScreenProps) {
           </motion.div>
         )}
 
+        {/* Enable Notifications */}
+        {farcasterUser && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2 }}
+            className="mt-4 flex justify-center"
+          >
+            <EnableNotifications />
+          </motion.div>
+        )}
+
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 2 }}
+          transition={{ delay: 2.1 }}
           className="text-center mt-6 text-sm text-green-300/70"
         >
           Powered by Farcaster • Built on Base

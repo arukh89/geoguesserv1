@@ -3,6 +3,7 @@
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
 import { isAdmin, getAdminByFid, isAdminWallet, getAdminByWallet } from "@/lib/admin/config"
 import { AdminPanel } from "@/components/admin/AdminPanel"
+import { SendNotification } from "@/components/admin/SendNotification"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAccount } from "wagmi"
 
@@ -45,8 +46,9 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-black p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto space-y-6">
         <AdminPanel adminFid={admin.fid} adminWallet={admin.wallet} />
+        <SendNotification adminFid={admin.fid} />
       </div>
     </div>
   )
