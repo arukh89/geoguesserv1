@@ -59,10 +59,10 @@ export default function WeeklyLeaderboard({
         setIsLoading(true)
         const supabase = createClient()
         
-        console.log("[WeeklyLeaderboard] Fetching data from leaderboard_weekly...")
-        
         // Use appropriate view based on period
         const viewName = period === 'daily' ? 'leaderboard_daily' : 'leaderboard_weekly'
+        
+        console.log(`[WeeklyLeaderboard] Fetching data from ${viewName}...`)
         
         const { data, error } = await supabase
           .from(viewName)

@@ -158,9 +158,16 @@ export function ClaimPoints({
         data: `0x${Buffer.from(`geoexplorer:claim:${farcasterUser.fid}:${score}:${Date.now()}`).toString("hex")}` as `0x${string}`,
       })
 
-      // Wait for transaction
-      const publicClient = createPublicClient({ chain: base, transport: custom(provider) })
-      await publicClient.waitForTransactionReceipt({ hash })
+      // Try to wait for transaction receipt, but don't fail if provider doesn't support it
+      // Farcaster Wallet doesn't support eth_getTransactionReceipt
+      try {
+        const publicClient = createPublicClient({ chain: base, transport: custom(provider) })
+        await publicClient.waitForTransactionReceipt({ hash, timeout: 10_000 })
+      } catch (receiptError: any) {
+        // If the provider doesn't support getTransactionReceipt, that's OK
+        // The transaction was already submitted successfully (we have the hash)
+        console.log("[ClaimPoints] Receipt wait skipped (provider may not support it):", receiptError?.message)
+      }
       
       toast.dismiss("claim-tx")
 
