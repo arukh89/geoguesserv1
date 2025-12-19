@@ -164,8 +164,8 @@ DECLARE
   v_deadline TIMESTAMPTZ;
   v_rewards RECORD;
 BEGIN
-  -- Calculate claim deadline (7 days after week end)
-  v_deadline := (p_week_end + INTERVAL '7 days')::TIMESTAMPTZ;
+  -- Calculate claim deadline (3 days after week end)
+  v_deadline := (p_week_end + INTERVAL '3 days')::TIMESTAMPTZ;
   
   -- Get top 10 players from weekly leaderboard and create rewards
   FOR v_rewards IN
@@ -183,16 +183,16 @@ BEGIN
       v_amount NUMERIC;
     BEGIN
       v_amount := CASE v_rewards.rank
-        WHEN 1 THEN 100000
-        WHEN 2 THEN 70000
-        WHEN 3 THEN 50000
-        WHEN 4 THEN 40000
-        WHEN 5 THEN 30000
-        WHEN 6 THEN 25000
-        WHEN 7 THEN 20000
-        WHEN 8 THEN 17000
-        WHEN 9 THEN 13000
-        WHEN 10 THEN 10000
+        WHEN 1 THEN 937500
+        WHEN 2 THEN 675000
+        WHEN 3 THEN 487500
+        WHEN 4 THEN 375000
+        WHEN 5 THEN 300000
+        WHEN 6 THEN 262500
+        WHEN 7 THEN 225000
+        WHEN 8 THEN 187500
+        WHEN 9 THEN 150000
+        WHEN 10 THEN 150000
         ELSE 0
       END;
       
