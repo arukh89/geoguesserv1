@@ -222,6 +222,82 @@ GRANT EXECUTE ON FUNCTION public.insert_score TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.get_top_leaderboard TO anon, authenticated;
 
 -- ============================================
+-- USER REWARDS TABLE (for token claim system)
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS public.user_rewards (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  fid INTEGER NOT NULL,
+  wallet_address TEXT NOT NULL,
+  player_name TEXT,
+  amount NUMERIC(20,8) NOT NULL,
+  week_id INTEGER NOT NULL,
+  week_start DATE NOT NULL,
+  week_end DATE NOT NULL,
+  rank INTEGER NOT NULL,
+  total_score INTEGER NOT NULL,
+  claimed BOOLEAN NOT NULL DEFAULT false,
+  claim_deadline TIMESTAMPTZ NOT NULL,
+  signature TEXT,
+  tx_hash TEXT,
+  claimed_at TIMESTAMPTZ,
+  CONSTRAINT unique_user_week UNIQUE (fid, week_id),
+  CONSTRAINT valid_rank CHECK (rank >= 1 AND rank <= 10),
+  CONSTRAINT valid_amount CHECK (amount > 0)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_rewards_fid ON public.user_rewards(fid);
+CREATE INDEX IF NOT EXISTS idx_user_rewards_wallet ON public.user_rewards(wallet_address);
+CREATE INDEX IF NOT EXISTS idx_user_rewards_week_id ON public.user_rewards(week_id);
+CREATE INDEX IF NOT EXISTS idx_user_rewards_claimed ON public.user_rewards(claimed);
+
+ALTER TABLE public.user_rewards ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS user_rewards_select_public ON public.user_rewards FOR SELECT USING (true);
+CREATE POLICY IF NOT EXISTS user_rewards_insert_public ON public.user_rewards FOR INSERT WITH CHECK (true);
+CREATE POLICY IF NOT EXISTS user_rewards_update_public ON public.user_rewards FOR UPDATE USING (true);
+
+-- Function to get user's claimable rewards
+CREATE OR REPLACE FUNCTION public.get_user_rewards(p_fid INTEGER)
+RETURNS TABLE (
+  id UUID, fid INTEGER, wallet_address TEXT, player_name TEXT,
+  amount NUMERIC, week_id INTEGER, week_start DATE, week_end DATE,
+  rank INTEGER, total_score INTEGER, claimed BOOLEAN,
+  claim_deadline TIMESTAMPTZ, signature TEXT, tx_hash TEXT,
+  claimed_at TIMESTAMPTZ, is_expired BOOLEAN
+) AS $
+BEGIN
+  RETURN QUERY
+  SELECT r.id, r.fid, r.wallet_address, r.player_name, r.amount,
+    r.week_id, r.week_start, r.week_end, r.rank, r.total_score,
+    r.claimed, r.claim_deadline, r.signature, r.tx_hash, r.claimed_at,
+    (NOW() > r.claim_deadline) as is_expired
+  FROM public.user_rewards r WHERE r.fid = p_fid ORDER BY r.week_id DESC;
+END;
+$ LANGUAGE plpgsql;
+
+-- Function to mark reward as claimed
+CREATE OR REPLACE FUNCTION public.claim_reward(p_reward_id UUID, p_tx_hash TEXT)
+RETURNS BOOLEAN AS $
+DECLARE v_claimed BOOLEAN; v_deadline TIMESTAMPTZ;
+BEGIN
+  SELECT claimed, claim_deadline INTO v_claimed, v_deadline
+  FROM public.user_rewards WHERE id = p_reward_id;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Reward not found'; END IF;
+  IF v_claimed THEN RAISE EXCEPTION 'Reward already claimed'; END IF;
+  IF NOW() > v_deadline THEN RAISE EXCEPTION 'Claim deadline has passed'; END IF;
+  UPDATE public.user_rewards SET claimed = true, tx_hash = p_tx_hash,
+    claimed_at = NOW(), updated_at = NOW() WHERE id = p_reward_id;
+  RETURN true;
+END;
+$ LANGUAGE plpgsql;
+
+GRANT SELECT, INSERT, UPDATE ON public.user_rewards TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_user_rewards TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.claim_reward TO anon, authenticated;
+
+-- ============================================
 -- CRON JOB (requires pg_cron extension)
 -- ============================================
 -- Schedule weekly cleanup every Monday at 00:00 UTC
