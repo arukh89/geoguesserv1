@@ -11,21 +11,31 @@ export function detectWalletEnvironment(): WalletEnvironment {
   if (typeof window === 'undefined') return 'browser'
   
   // Check if running in Farcaster miniapp (Warpcast)
+  // @ts-ignore - Farcaster SDK injects this
+  const hasFarcasterSDK = window.farcaster !== undefined || window.Farcaster !== undefined
+  
+  // Check various Farcaster indicators
   const isFarcasterMiniApp = 
+    hasFarcasterSDK ||
     window.location.hostname.includes('warpcast') ||
-    // @ts-ignore
-    window.farcaster !== undefined ||
-    // Check for Farcaster frame context
     document.referrer.includes('warpcast') ||
-    // Check URL params
-    new URLSearchParams(window.location.search).has('fc_frame')
+    document.referrer.includes('farcaster') ||
+    new URLSearchParams(window.location.search).has('fc_frame') ||
+    // Check for Farcaster frame embed
+    window.self !== window.top && document.referrer.includes('warpcast')
   
   if (isFarcasterMiniApp) return 'farcaster'
   
-  // Check if running in Coinbase Wallet browser
+  // Check if running in Coinbase Wallet browser or Base app
   // @ts-ignore
-  const isCoinbaseWallet = window.ethereum?.isCoinbaseWallet || 
-    navigator.userAgent.includes('CoinbaseWallet')
+  const ethereum = window.ethereum
+  const isCoinbaseWallet = 
+    ethereum?.isCoinbaseWallet || 
+    ethereum?.isCoinbaseBrowser ||
+    navigator.userAgent.includes('CoinbaseWallet') ||
+    navigator.userAgent.includes('Coinbase') ||
+    // Base app uses Coinbase Wallet
+    navigator.userAgent.includes('Base/')
   
   if (isCoinbaseWallet) return 'coinbase'
   
@@ -39,11 +49,28 @@ export function detectWalletEnvironment(): WalletEnvironment {
 export function getPreferredConnectorName(env: WalletEnvironment): string {
   switch (env) {
     case 'farcaster':
-      return 'Farcaster' // or 'farcasterMiniApp'
+      return 'Farcaster'
     case 'coinbase':
-      return 'Coinbase Wallet'
+      return 'Coinbase'
     case 'browser':
     default:
-      return 'Injected' // MetaMask, etc.
+      return 'Injected'
   }
+}
+
+/**
+ * Check if we're in a mobile app context
+ */
+export function isMobileAppContext(): boolean {
+  if (typeof window === 'undefined') return false
+  
+  const ua = navigator.userAgent
+  return (
+    ua.includes('Warpcast') ||
+    ua.includes('CoinbaseWallet') ||
+    ua.includes('Base/') ||
+    // Generic mobile webview detection
+    ua.includes('wv') ||
+    ua.includes('WebView')
+  )
 }
