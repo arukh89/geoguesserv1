@@ -1,11 +1,14 @@
 "use client"
 
 import React from "react"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Globe, MapPin, Trophy, Target } from "lucide-react"
+import { Globe, MapPin, Trophy, Target, Gift } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import GameModeDropdown from "./GameModeDropdown"
+import ClaimRewards from "./ClaimRewards"
+import { useFarcasterUser } from "@/hooks/useFarcasterUser"
 
 interface HomeScreenProps {
   onStart: (mode: "classic" | "no-move" | "time-attack", durationSec?: number) => void
@@ -13,6 +16,8 @@ interface HomeScreenProps {
 
 export default function HomeScreen({ onStart }: HomeScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const [showRewards, setShowRewards] = useState(false)
+  const { user: farcasterUser } = useFarcasterUser()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -204,13 +209,20 @@ export default function HomeScreen({ onStart }: HomeScreenProps) {
                 transition={{ delay: 1.7 }}
                 className="p-4 rounded-lg border-2 border-yellow-500/40 bg-[rgba(255,200,0,0.1)]"
               >
-                <div className="flex items-center gap-3">
-                  <Trophy className="w-5 h-5 text-yellow-400" />
-                  <p className="text-sm font-medium text-green-200">
-                    <span className="font-bold text-yellow-300">Leaderboard & Rewards:</span> Only scores from{" "}
-                    <span className="font-bold text-yellow-300">Time Attack 30s</span> mode count for the weekly
-                    leaderboard. Top 10 players win GEO tokens every week!
-                  </p>
+                <div className="flex items-start gap-3">
+                  <Trophy className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm font-medium text-green-200 space-y-1">
+                    <p>
+                      <span className="font-bold text-yellow-300">Leaderboard & Rewards:</span> Only{" "}
+                      <span className="font-bold text-yellow-300">Time Attack 30s</span> mode counts!
+                    </p>
+                    <p className="text-green-200/80">
+                      • Claim your points on Base network to submit to leaderboard
+                    </p>
+                    <p className="text-green-200/80">
+                      • Top 10 weekly players win GEOX tokens!
+                    </p>
+                  </div>
                 </div>
               </motion.div>
 
@@ -228,6 +240,45 @@ export default function HomeScreen({ onStart }: HomeScreenProps) {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Claim Rewards Section */}
+        {farcasterUser && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.9 }}
+            className="mt-6"
+          >
+            {showRewards ? (
+              <div className="space-y-3">
+                <div className="flex justify-end">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowRewards(false)}
+                    className="text-green-400/70 hover:text-green-400 bg-transparent border-transparent hover:bg-green-500/10"
+                  >
+                    Hide Rewards
+                  </Button>
+                </div>
+                <ClaimRewards />
+              </div>
+            ) : (
+              <Card className="shadow-xl bg-black/80 border-2 border-green-500/30 backdrop-blur-sm">
+                <CardContent className="p-4">
+                  <Button
+                    onClick={() => setShowRewards(true)}
+                    variant="outline"
+                    className="w-full h-12 text-green-400 border-green-500/50 hover:bg-green-500/10 gap-2"
+                  >
+                    <Gift className="w-5 h-5" />
+                    View & Claim Your Rewards
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </motion.div>
+        )}
 
         <motion.p
           initial={{ opacity: 0 }}
