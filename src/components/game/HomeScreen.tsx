@@ -302,13 +302,13 @@ export default function HomeScreen({ onStart }: HomeScreenProps) {
                     </div>
                     <div className="text-right">
                       <div className="text-xs text-yellow-400/60 max-w-[140px]">
-                        Terkunci hingga akhir minggu
+                        Locked until end of week
                       </div>
                     </div>
                   </div>
                   <div className="mt-3 p-2 rounded bg-yellow-500/10 border border-yellow-500/20">
                     <p className="text-xs text-yellow-400/80 text-center">
-                      ⚠️ Ranking bisa berubah. Claim tersedia setiap Minggu untuk top 10.
+                      ⚠️ Ranking may change. Claim available every Sunday for top 10.
                     </p>
                   </div>
                 </CardContent>
