@@ -17,13 +17,14 @@ interface FinalResultsProps {
   onShare: () => void
   gameMode: "classic" | "no-move" | "time-attack"
   timeLimit?: number
+  gameSessionHash?: string
 }
 
 // Only Time Attack 30s mode counts for leaderboard
 const LEADERBOARD_MODE = "time-attack"
 const LEADERBOARD_TIME_LIMIT = 30
 
-export default function FinalResults({ results, totalScore, onPlayAgain, onShare, gameMode, timeLimit }: FinalResultsProps) {
+export default function FinalResults({ results, totalScore, onPlayAgain, onShare, gameMode, timeLimit, gameSessionHash }: FinalResultsProps) {
   const isLeaderboardEligible = gameMode === LEADERBOARD_MODE && timeLimit === LEADERBOARD_TIME_LIMIT
   const { user: farcasterUser, loading: userLoading } = useFarcasterUser()
   const distances = results.map((r: RoundResult) => r.distance)
@@ -130,6 +131,7 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
                   score={totalScore}
                   rounds={results.length}
                   averageDistance={averageDistance}
+                  gameSessionHash={gameSessionHash}
                   onSuccess={() => setPointsClaimed(true)}
                 />
               </motion.div>

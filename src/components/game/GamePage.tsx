@@ -17,6 +17,13 @@ import { Map, X, Loader2 } from "lucide-react"
 const GAME_STATE_KEY = "geo_game_state"
 const TOTAL_ROUNDS = 5
 
+// Generate unique game session hash
+function generateGameSessionHash(fid: number | undefined, timestamp: number, locationIds: string[]): string {
+  const data = `${fid || 'anon'}-${timestamp}-${locationIds.join(',')}`
+  // Simple hash using btoa (base64) - sufficient for uniqueness
+  return btoa(data).replace(/[^a-zA-Z0-9]/g, '').substring(0, 32)
+}
+
 interface GameStateData {
   gameState: "home" | "playing" | "results" | "final"
   locations: Location[]
@@ -25,6 +32,8 @@ interface GameStateData {
   gameMode: GameMode
   timeLimit?: number
   timeLeft?: number
+  gameSessionHash?: string
+  gameStartTime?: number
 }
 
 function saveGameState(data: GameStateData) {
@@ -59,6 +68,8 @@ export function GamePage() {
   const [loadingLocation, setLoadingLocation] = useState(false)
   const [initialized, setInitialized] = useState(false)
   const [loadingRound, setLoadingRound] = useState(false)
+  const [gameSessionHash, setGameSessionHash] = useState<string | undefined>()
+  const [gameStartTime, setGameStartTime] = useState<number | undefined>()
 
   // Restore game state on mount
   useEffect(() => {
@@ -71,6 +82,8 @@ export function GamePage() {
       setGameMode(saved.gameMode)
       setTimeLimit(saved.timeLimit)
       setTimeLeft(saved.timeLeft)
+      setGameSessionHash(saved.gameSessionHash)
+      setGameStartTime(saved.gameStartTime)
     }
     setInitialized(true)
   }, [])
@@ -89,9 +102,11 @@ export function GamePage() {
         gameMode,
         timeLimit,
         timeLeft,
+        gameSessionHash,
+        gameStartTime,
       })
     }
-  }, [initialized, gameState, locations, currentRound, results, gameMode, timeLimit, timeLeft])
+  }, [initialized, gameState, locations, currentRound, results, gameMode, timeLimit, timeLeft, gameSessionHash, gameStartTime])
   // Countdown timer per round
   useEffect(() => {
     if (gameState !== "playing" || typeof timeLimit !== "number") return;
@@ -169,9 +184,19 @@ export function GamePage() {
     setResults([])
     setShowMap(false)
     
+    // Generate game start time for session hash
+    const startTime = Date.now()
+    setGameStartTime(startTime)
+    
     try {
       const newLocations = await fetchAllLocations()
       setLocations(newLocations)
+      
+      // Generate unique game session hash
+      const locationIds = newLocations.map(l => l.id)
+      const sessionHash = generateGameSessionHash(undefined, startTime, locationIds)
+      setGameSessionHash(sessionHash)
+      
       setLoadingRound(true)
       setGameState("playing")
       // Brief delay to show round loading
@@ -181,6 +206,12 @@ export function GamePage() {
       // Fallback to curated locations
       const fallbackLocations = getRandomLocations(TOTAL_ROUNDS)
       setLocations(fallbackLocations)
+      
+      // Generate session hash for fallback locations too
+      const locationIds = fallbackLocations.map(l => l.id)
+      const sessionHash = generateGameSessionHash(undefined, startTime, locationIds)
+      setGameSessionHash(sessionHash)
+      
       setLoadingRound(true)
       setGameState("playing")
       setTimeout(() => setLoadingRound(false), 800)
@@ -314,7 +345,7 @@ Can you beat my score? 👇`
           <PanoramaViewer
             imageUrl={location.panoramaUrl}
             shot={
-              location.provider
+              location.provider && location.provider !== "static"
                 ? {
                     provider: location.provider,
                     imageId: location.imageId,
@@ -345,9 +376,9 @@ Can you beat my score? 👇`
             {/* Close button */}
             <Button
               onClick={() => setShowMap(false)}
-              className="absolute top-4 right-4 z-[300]"
+              className="absolute top-4 right-4 z-[300] w-10 h-10 p-0"
               variant="secondary"
-              size="icon"
+              size="sm"
             >
               <X className="w-5 h-5" />
             </Button>
@@ -382,6 +413,7 @@ Can you beat my score? 👇`
         onShare={shareResults}
         gameMode={gameMode}
         timeLimit={timeLimit}
+        gameSessionHash={gameSessionHash}
       />
     )
   }

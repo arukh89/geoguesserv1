@@ -23,6 +23,7 @@ interface ClaimPointsProps {
   score: number
   rounds: number
   averageDistance: number
+  gameSessionHash?: string
   onSuccess: () => void
   onSkip?: () => void
   disabled?: boolean
@@ -32,6 +33,7 @@ export function ClaimPoints({
   score,
   rounds,
   averageDistance,
+  gameSessionHash,
   onSuccess,
   onSkip,
   disabled = false,
@@ -116,10 +118,16 @@ export function ClaimPoints({
         p_average_distance: Math.round(averageDistance),
         p_fid: farcasterUser.fid,
         p_pfp_url: farcasterUser.pfpUrl || null,
+        p_game_session_hash: gameSessionHash || null,
       })
 
       if (error) {
         console.error("Failed to submit score:", error)
+        if (error.message?.includes("already claimed")) {
+          toast.error("This game session has already been claimed!")
+          setClaimed(true) // Mark as claimed to prevent retry
+          return
+        }
         toast.error("Failed to save score. Please try again.")
         return
       }

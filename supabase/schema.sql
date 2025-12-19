@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS public.scores (
   rounds INTEGER,
   average_distance INTEGER,
   fid INTEGER, -- Farcaster user ID
-  pfp_url TEXT -- Profile picture URL
+  pfp_url TEXT, -- Profile picture URL
+  game_session_hash TEXT -- Unique hash to prevent double claim
 );
 
 -- admin_rewards table: records token payouts to winners
@@ -44,6 +45,7 @@ CREATE TABLE IF NOT EXISTS public.admin_rewards (
 CREATE INDEX IF NOT EXISTS idx_scores_created_at ON public.scores(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_scores_score_value ON public.scores(score_value DESC);
 CREATE INDEX IF NOT EXISTS idx_scores_fid ON public.scores(fid);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_scores_game_session_hash ON public.scores(game_session_hash) WHERE game_session_hash IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_admin_rewards_week_start ON public.admin_rewards(week_start);
 CREATE INDEX IF NOT EXISTS idx_admin_rewards_recipient_wallet ON public.admin_rewards(recipient_wallet);
 
@@ -65,7 +67,7 @@ CREATE POLICY IF NOT EXISTS admin_rewards_insert_public ON public.admin_rewards 
 -- FUNCTIONS
 -- ============================================
 
--- Insert score function with FID and PFP
+-- Insert score function with FID, PFP, and game session hash
 CREATE OR REPLACE FUNCTION public.insert_score(
   p_player_name TEXT DEFAULT NULL,
   p_identity TEXT DEFAULT NULL,
@@ -73,10 +75,12 @@ CREATE OR REPLACE FUNCTION public.insert_score(
   p_rounds INTEGER DEFAULT 1,
   p_average_distance INTEGER DEFAULT 0,
   p_fid INTEGER DEFAULT NULL,
-  p_pfp_url TEXT DEFAULT NULL
+  p_pfp_url TEXT DEFAULT NULL,
+  p_game_session_hash TEXT DEFAULT NULL
 ) RETURNS UUID AS $
 DECLARE
   new_score_id UUID;
+  existing_id UUID;
 BEGIN
   IF p_score_value < 0 THEN
     RAISE EXCEPTION 'Score cannot be negative';
@@ -89,11 +93,22 @@ BEGIN
   IF p_average_distance < 0 THEN
     RAISE EXCEPTION 'Average distance cannot be negative';
   END IF;
+
+  -- Check for duplicate game session (prevent double claim)
+  IF p_game_session_hash IS NOT NULL THEN
+    SELECT id INTO existing_id 
+    FROM public.scores 
+    WHERE game_session_hash = p_game_session_hash;
+    
+    IF existing_id IS NOT NULL THEN
+      RAISE EXCEPTION 'Game session already claimed';
+    END IF;
+  END IF;
   
   INSERT INTO public.scores (
-    player_name, identity, score_value, rounds, average_distance, fid, pfp_url
+    player_name, identity, score_value, rounds, average_distance, fid, pfp_url, game_session_hash
   ) VALUES (
-    p_player_name, p_identity, p_score_value, p_rounds, p_average_distance, p_fid, p_pfp_url
+    p_player_name, p_identity, p_score_value, p_rounds, p_average_distance, p_fid, p_pfp_url, p_game_session_hash
   ) RETURNING id INTO new_score_id;
   
   RETURN new_score_id;

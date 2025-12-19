@@ -23,10 +23,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { fetchUserByFid } from "@/lib/neynar/client"
 
-// GEO EXPLORER token on Base Mainnet (deployed via mint.club)
-const GEO_EXPLORER_CONTRACT = process.env.NEXT_PUBLIC_GEO_TOKEN_ADDRESS || "0x19E426b33E21e4C3Bd555de40599C4f68d48630b"
-const GEO_EXPLORER_DECIMALS = 18
-const BASE_CHAIN_ID = 8453
+// GEOX token on Base Mainnet
+import { GEOX_TOKEN_ADDRESS, GEOX_TOKEN_DECIMALS, BASE_CHAIN_ID, WEEKLY_REWARDS } from "@/lib/contracts/geoxRewards"
 
 const ERC20_ABI = [
   {
@@ -74,13 +72,15 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
   const loadWeeklyLeaderboard = useCallback(async () => {
     try {
       setLoading(true)
+      
+      // Calculate week start (Monday) and end (Sunday) using UTC
       const now = new Date()
-      const weekStart = new Date(now)
-      weekStart.setDate(now.getDate() - now.getDay())
-      weekStart.setHours(0, 0, 0, 0)
+      const dayOfWeek = now.getUTCDay() // 0 = Sunday, 1 = Monday, ...
+      const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+      const weekStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysFromMonday, 0, 0, 0, 0))
       const weekEnd = new Date(weekStart)
-      weekEnd.setDate(weekStart.getDate() + 6)
-      weekEnd.setHours(23, 59, 59, 999)
+      weekEnd.setUTCDate(weekStart.getUTCDate() + 6)
+      weekEnd.setUTCHours(23, 59, 59, 999)
 
       // Use aggregated view - each user (FID) has ONE total score
       const { data, error } = await supabase
@@ -109,21 +109,9 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
       
       // Fetch wallet addresses from Neynar for entries without valid wallet
       await Promise.all(entries.map(async (entry) => {
-        // Weekly rewards: 375,000 GEO total (1.5M pool / 4 weeks)
+        // Use WEEKLY_REWARDS from geoxRewards.ts
         const rank = entry.weekly_rank
-        const rewardsByRank: Record<number, string> = {
-          1: "100000",
-          2: "70000",
-          3: "50000",
-          4: "40000",
-          5: "30000",
-          6: "25000",
-          7: "20000",
-          8: "17000",
-          9: "13000",
-          10: "10000",
-        }
-        suggestedAmounts[entry.id] = rewardsByRank[rank] || "0"
+        suggestedAmounts[entry.id] = (WEEKLY_REWARDS[rank] || 0).toString()
         
         // Always fetch from Neynar to get the correct Warplet address
         if (entry.fid) {
@@ -193,7 +181,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
       const transferData = encodeFunctionData({
         abi: ERC20_ABI,
         functionName: "transfer",
-        args: [recipientWallet as `0x${string}`, parseUnits(amount, GEO_EXPLORER_DECIMALS)],
+        args: [recipientWallet as `0x${string}`, parseUnits(amount, GEOX_TOKEN_DECIMALS)],
       })
 
       if (!walletClient) {
@@ -203,7 +191,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
       }
 
       const hash = await walletClient.sendTransaction({
-        to: GEO_EXPLORER_CONTRACT as `0x${string}`,
+        to: GEOX_TOKEN_ADDRESS,
         data: transferData,
       })
 
@@ -218,7 +206,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
         tx_hash: hash,
       })
 
-      toast.success(`Sent ${amount} GEO EXPLORER to ${recipientWallet.slice(0, 6)}...${recipientWallet.slice(-4)}`)
+      toast.success(`Sent ${amount} GEOX to ${recipientWallet.slice(0, 6)}...${recipientWallet.slice(-4)}`)
     } catch (error: any) {
       console.error("Failed to send tokens:", error)
       toast.error(error?.message || "Failed to send tokens")
@@ -271,7 +259,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-green-400">Admin Panel</h2>
-          <p className="text-sm text-green-400/80 mt-1">Send GEO EXPLORER tokens (Base Network)</p>
+          <p className="text-sm text-green-400/80 mt-1">Send GEOX tokens (Base Network)</p>
           {chainId && chainId !== BASE_CHAIN_ID && (
             <p className="text-sm text-red-400 mt-1">⚠️ Switch to Base network</p>
           )}
@@ -280,7 +268,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
           <Button onClick={loadWeeklyLeaderboard} variant="secondary" size="sm">Refresh</Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm" disabled={clearingAll || leaderboard.length === 0}>
+              <Button variant="secondary" size="sm" disabled={clearingAll || leaderboard.length === 0} className="bg-red-600/20 border-red-500/50 text-red-400 hover:bg-red-600/30">
                 {clearingAll ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
                 Clear All
               </Button>
