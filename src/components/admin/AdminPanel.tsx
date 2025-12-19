@@ -9,7 +9,7 @@ import { createBrowserClient } from "@/lib/supabase/client"
 import { useAccount, useWalletClient } from "wagmi"
 import { parseUnits, encodeFunctionData } from "viem"
 import { toast } from "sonner"
-import { Loader2, Send, Trash2, AlertTriangle } from "lucide-react"
+import { Loader2, Send, Trash2, AlertTriangle, CheckCircle } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,6 +54,8 @@ interface LeaderboardEntry {
   weekly_rank: number
   week_start: string
   week_end: string
+  already_rewarded?: boolean // Track if already sent this week
+  reward_tx_hash?: string
 }
 
 export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
@@ -86,6 +88,20 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
 
       if (error) throw error
 
+      // Check which users already received rewards this week
+      const weekStartStr = weekStart.toISOString().split("T")[0]
+      const { data: existingRewards } = await supabase
+        .from("admin_rewards")
+        .select("recipient_wallet, recipient_name, tx_hash")
+        .eq("week_start", weekStartStr)
+
+      const rewardedWallets = new Map<string, string>()
+      const rewardedNames = new Set<string>()
+      existingRewards?.forEach(r => {
+        if (r.recipient_wallet) rewardedWallets.set(r.recipient_wallet.toLowerCase(), r.tx_hash || '')
+        if (r.recipient_name) rewardedNames.add(r.recipient_name.toLowerCase())
+      })
+
       const entries: LeaderboardEntry[] = (data || []).map((entry) => ({
         id: entry.id,
         player_name: entry.p_player_name,
@@ -94,14 +110,17 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
         pfp_url: entry.p_pfp_url,
         score_value: entry.p_score_value || 0,
         weekly_rank: Number(entry.rank) || 0,
-        week_start: weekStart.toISOString().split("T")[0],
+        week_start: weekStartStr,
         week_end: weekEnd.toISOString().split("T")[0],
+        already_rewarded: false, // Will be updated after wallet fetch
+        reward_tx_hash: undefined,
       }))
 
       setLeaderboard(entries)
 
       const suggestedAmounts: Record<string, string> = {}
       const initialWallets: Record<string, string> = {}
+      const updatedEntries: LeaderboardEntry[] = []
       
       // Fetch wallet addresses from Neynar for entries without valid wallet
       await Promise.all(entries.map(async (entry) => {
@@ -109,13 +128,15 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
         const rank = entry.weekly_rank
         suggestedAmounts[entry.id] = (WEEKLY_REWARDS[rank] || 0).toString()
         
+        let walletAddress = ''
+        
         // Always fetch from Neynar to get the correct Warplet address
         if (entry.fid) {
           try {
             const neynarUser = await fetchUserByFid(entry.fid)
             if (neynarUser) {
               // Use primaryEthAddress (Warplet) first, then verifiedAddresses, then custodyAddress
-              const walletAddress = neynarUser.primaryEthAddress || neynarUser.verifiedAddresses?.[0] || neynarUser.custodyAddress
+              walletAddress = neynarUser.primaryEthAddress || neynarUser.verifiedAddresses?.[0] || neynarUser.custodyAddress || ''
               if (walletAddress && /^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
                 initialWallets[entry.id] = walletAddress
               }
@@ -126,10 +147,25 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
         }
         // Fallback to database identity if no FID or Neynar failed
         if (!initialWallets[entry.id] && entry.identity && /^0x[a-fA-F0-9]{40}$/.test(entry.identity)) {
+          walletAddress = entry.identity
           initialWallets[entry.id] = entry.identity
         }
+
+        // Check if this user already received reward this week
+        const isRewarded = walletAddress 
+          ? rewardedWallets.has(walletAddress.toLowerCase())
+          : (entry.player_name ? rewardedNames.has(entry.player_name.toLowerCase()) : false)
+        
+        const txHash = walletAddress ? rewardedWallets.get(walletAddress.toLowerCase()) : undefined
+
+        updatedEntries.push({
+          ...entry,
+          already_rewarded: isRewarded,
+          reward_tx_hash: txHash,
+        })
       }))
       
+      setLeaderboard(updatedEntries)
       setAmounts(suggestedAmounts)
       setWallets(initialWallets)
     } catch (error) {
@@ -297,9 +333,10 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
         {leaderboard.map((entry) => {
           const recipientWallet = getRecipientWallet(entry)
           const hasValidWallet = isValidWallet(recipientWallet)
+          const isAlreadyRewarded = entry.already_rewarded
           
           return (
-            <Card key={entry.id} className="p-4">
+            <Card key={entry.id} className={`p-4 ${isAlreadyRewarded ? 'opacity-60 bg-green-500/5' : ''}`}>
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-4">
                   <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[var(--accent)]/10 flex items-center justify-center overflow-hidden">
@@ -313,6 +350,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-green-300 font-medium">{entry.player_name || "Anonymous"}</span>
                       {entry.fid && <span className="text-xs bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded">FID: {entry.fid}</span>}
+                      {isAlreadyRewarded && <span className="text-xs bg-green-500/20 text-green-300 px-1.5 py-0.5 rounded">✓ Rewarded</span>}
                     </div>
                     <div className="text-sm text-green-400/80">Score: {entry.score_value.toLocaleString()} pts</div>
                   </div>
@@ -358,15 +396,22 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
                       className="text-right"
                     />
                   </div>
-                  <Button
-                    onClick={() => handleSendTokens(entry)}
-                    disabled={sending[entry.id] || !amounts[entry.id] || !hasValidWallet || chainId !== BASE_CHAIN_ID}
-                    size="sm"
-                    className="gap-2"
-                  >
-                    {sending[entry.id] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    Send
-                  </Button>
+                  {isAlreadyRewarded ? (
+                    <div className="flex items-center gap-1 text-green-400 text-sm px-3">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Sent</span>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => handleSendTokens(entry)}
+                      disabled={sending[entry.id] || !amounts[entry.id] || !hasValidWallet || chainId !== BASE_CHAIN_ID}
+                      size="sm"
+                      className="gap-2"
+                    >
+                      {sending[entry.id] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      Send
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>
