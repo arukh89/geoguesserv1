@@ -46,7 +46,10 @@ export function ClaimPoints({
   // Check if this game has already been claimed on mount
   useEffect(() => {
     async function checkIfClaimed() {
+      console.log("[ClaimPoints] Checking claim status for hash:", gameSessionHash)
+      
       if (!gameSessionHash) {
+        console.log("[ClaimPoints] No gameSessionHash provided!")
         setChecking(false)
         return
       }
@@ -55,6 +58,7 @@ export function ClaimPoints({
       if (typeof window !== 'undefined') {
         const localClaimed = sessionStorage.getItem(`claimed_${gameSessionHash}`)
         if (localClaimed === 'true') {
+          console.log("[ClaimPoints] Already claimed (sessionStorage)")
           setClaimed(true)
           setChecking(false)
           return
@@ -70,6 +74,8 @@ export function ClaimPoints({
           .eq('game_session_hash', gameSessionHash)
           .maybeSingle()
         
+        console.log("[ClaimPoints] Database check result:", data)
+        
         if (data) {
           setClaimed(true)
           // Sync to sessionStorage
@@ -78,7 +84,7 @@ export function ClaimPoints({
           }
         }
       } catch (e) {
-        console.warn("Failed to check claim status:", e)
+        console.warn("[ClaimPoints] Failed to check claim status:", e)
       } finally {
         setChecking(false)
       }
@@ -175,7 +181,10 @@ export function ClaimPoints({
         ? `@${farcasterUser.username}`
         : farcasterUser.displayName || "Anonymous"
 
-      const { error } = await supabase.rpc("insert_score", {
+      console.log("[ClaimPoints] Submitting score with hash:", gameSessionHash)
+      console.log("[ClaimPoints] Score data:", { playerName, walletAddress, score, rounds, averageDistance, fid: farcasterUser.fid })
+
+      const { data: insertResult, error } = await supabase.rpc("insert_score", {
         p_player_name: playerName,
         p_identity: walletAddress,
         p_score_value: score,
@@ -183,8 +192,10 @@ export function ClaimPoints({
         p_average_distance: Math.round(averageDistance),
         p_fid: farcasterUser.fid,
         p_pfp_url: farcasterUser.pfpUrl || null,
-        p_game_session_hash: gameSessionHash || null,
+        p_game_session_hash: gameSessionHash,
       })
+      
+      console.log("[ClaimPoints] Insert result:", insertResult, "Error:", error)
 
       if (error) {
         console.error("Failed to submit score:", error)

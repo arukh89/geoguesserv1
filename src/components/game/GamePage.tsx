@@ -195,6 +195,7 @@ export function GamePage() {
       // Generate unique game session hash
       const locationIds = newLocations.map(l => l.id)
       const sessionHash = generateGameSessionHash(undefined, startTime, locationIds)
+      console.log("[GamePage] Generated session hash:", sessionHash)
       setGameSessionHash(sessionHash)
       
       setLoadingRound(true)
@@ -405,6 +406,7 @@ Can you beat my score? 👇`
 
   if (gameState === "final") {
     const totalScore = results.reduce((sum, r) => sum + r.score, 0)
+    console.log("[GamePage] Rendering FinalResults with hash:", gameSessionHash)
     return (
       <FinalResults
         results={results}
