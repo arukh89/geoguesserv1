@@ -2,15 +2,17 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { useAccount, useWalletClient, useChainId, useSwitchChain, useConnect } from "wagmi"
+import { useAccount, useConnect, useWalletClient, usePublicClient, useChainId, useSwitchChain } from "wagmi"
 import { toast } from "sonner"
 import { Loader2, Wallet, CheckCircle, Zap } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
 import { fetchUserByFid } from "@/lib/neynar/client"
-import { detectWalletEnvironment, getPreferredConnectorName } from "@/lib/web3/environment"
+import { parseEther } from "viem"
 
 const BASE_CHAIN_ID = 8453
+// Contract address to send 0 ETH for on-chain activity
+const GEOX_CONTRACT = process.env.NEXT_PUBLIC_GEOX_REWARDS_CONTRACT as `0x${string}` || "0xA09Ce8CF97046DDFF087b31e353d43e08f62d165"
 
 interface ClaimPointsProps {
   score: number
@@ -31,30 +33,35 @@ export function ClaimPoints({
 }: ClaimPointsProps) {
   const { user: farcasterUser } = useFarcasterUser()
   const { isConnected, address } = useAccount()
+  const { connect, connectors, isPending: isConnecting } = useConnect()
+  const { data: walletClient } = useWalletClient()
+  const publicClient = usePublicClient()
   const chainId = useChainId()
   const { switchChain } = useSwitchChain()
-  const { data: walletClient } = useWalletClient()
-  const { connect, connectors } = useConnect()
 
   const [claiming, setClaiming] = useState(false)
   const [claimed, setClaimed] = useState(false)
 
-  // Auto-connect appropriate wallet based on environment
+  // Auto-connect first available connector on mount
   useEffect(() => {
-    if (isConnected || connectors.length === 0) return
-    
-    const env = detectWalletEnvironment()
-    const preferredName = getPreferredConnectorName(env)
-    
-    // Find matching connector
-    const connector = connectors.find(c => 
-      c.name.toLowerCase().includes(preferredName.toLowerCase())
-    ) || connectors[0]
-    
+    if (!isConnected && connectors.length > 0 && !isConnecting) {
+      const connector = connectors[0]
+      if (connector) {
+        connect({ connector })
+      }
+    }
+  }, [isConnected, connectors, connect, isConnecting])
+
+  async function handleConnect() {
+    if (connectors.length === 0) {
+      toast.error("No wallet available")
+      return
+    }
+    const connector = connectors[0]
     if (connector) {
       connect({ connector })
     }
-  }, [isConnected, connectors, connect])
+  }
 
   async function handleClaim() {
     if (!farcasterUser?.fid) {
@@ -62,14 +69,16 @@ export function ClaimPoints({
       return
     }
 
-    if (!isConnected || !walletClient) {
-      toast.error("Please connect your wallet")
+    if (!isConnected || !address || !walletClient) {
+      toast.error("Please connect your wallet first")
       return
     }
 
+    // Check chain
     if (chainId !== BASE_CHAIN_ID) {
       try {
         switchChain({ chainId: BASE_CHAIN_ID })
+        toast.info("Please switch to Base network and try again")
         return
       } catch {
         toast.error("Please switch to Base network")
@@ -80,7 +89,23 @@ export function ClaimPoints({
     try {
       setClaiming(true)
 
-      // Get user's wallet address from Neynar
+      // Send 0 ETH transaction to contract (on-chain activity with gas fee)
+      toast.loading("Confirming on Base...", { id: "claim-tx" })
+      
+      const hash = await walletClient.sendTransaction({
+        to: GEOX_CONTRACT,
+        value: parseEther("0"),
+        data: `0x${Buffer.from(`claim:${farcasterUser.fid}:${score}:${Date.now()}`).toString("hex")}` as `0x${string}`,
+      })
+
+      // Wait for transaction
+      if (publicClient) {
+        await publicClient.waitForTransactionReceipt({ hash })
+      }
+      
+      toast.dismiss("claim-tx")
+
+      // Get user's verified wallet from Neynar
       let walletAddress = address
       try {
         const neynarUser = await fetchUserByFid(farcasterUser.fid)
@@ -114,11 +139,16 @@ export function ClaimPoints({
       }
 
       setClaimed(true)
-      toast.success("Points claimed! Your score is now on the leaderboard!")
+      toast.success("Points claimed on-chain! Your score is now on the leaderboard!")
       onSuccess()
     } catch (error: any) {
       console.error("Failed to claim points:", error)
-      toast.error(error?.message || "Failed to claim points")
+      toast.dismiss("claim-tx")
+      if (error?.message?.includes("rejected") || error?.message?.includes("denied")) {
+        toast.error("Transaction rejected")
+      } else {
+        toast.error(error?.message || "Failed to claim points")
+      }
     } finally {
       setClaiming(false)
     }
@@ -136,15 +166,20 @@ export function ClaimPoints({
   return (
     <div className="space-y-3">
       <Button
-        onClick={handleClaim}
-        disabled={disabled || claiming || !farcasterUser}
+        onClick={!isConnected ? handleConnect : handleClaim}
+        disabled={disabled || claiming || !farcasterUser || isConnecting}
         size="lg"
         className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 gap-2"
       >
         {claiming ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            Claiming...
+            Confirming on Base...
+          </>
+        ) : isConnecting ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Connecting...
           </>
         ) : !isConnected ? (
           <>
@@ -154,7 +189,7 @@ export function ClaimPoints({
         ) : chainId !== BASE_CHAIN_ID ? (
           <>
             <Zap className="w-5 h-5" />
-            Switch to Base Network
+            Switch to Base & Claim
           </>
         ) : (
           <>
@@ -165,7 +200,7 @@ export function ClaimPoints({
       </Button>
 
       <p className="text-xs text-center text-green-400/60">
-        Top 10 weekly players win GEOX tokens every Sunday!
+        Requires small gas fee on Base. Top 10 weekly win GEOX!
       </p>
 
       {onSkip && (
