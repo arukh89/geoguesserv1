@@ -71,8 +71,13 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
 
   const performance = getPerformanceLevel(accuracyPercentage)
 
-  // Track if points have been claimed
-  const [pointsClaimed, setPointsClaimed] = useState(false)
+  // Track if points have been claimed - check sessionStorage on init
+  const [pointsClaimed, setPointsClaimed] = useState(() => {
+    if (typeof window !== 'undefined' && gameSessionHash) {
+      return sessionStorage.getItem(`claimed_${gameSessionHash}`) === 'true'
+    }
+    return false
+  })
 
   return (
     <div className="min-h-screen p-4 pt-16 md:pt-8 relative z-10">
@@ -132,7 +137,13 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
                   rounds={results.length}
                   averageDistance={averageDistance}
                   gameSessionHash={gameSessionHash}
-                  onSuccess={() => setPointsClaimed(true)}
+                  onSuccess={() => {
+                    setPointsClaimed(true)
+                    // Also mark in sessionStorage (ClaimPoints already does this, but double-ensure)
+                    if (typeof window !== 'undefined' && gameSessionHash) {
+                      sessionStorage.setItem(`claimed_${gameSessionHash}`, 'true')
+                    }
+                  }}
                 />
               </motion.div>
             )}

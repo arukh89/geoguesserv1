@@ -24,7 +24,7 @@ import {
 import { fetchUserByFid } from "@/lib/neynar/client"
 
 // GEOX token on Base Mainnet
-import { GEOX_TOKEN_ADDRESS, GEOX_TOKEN_DECIMALS, BASE_CHAIN_ID, WEEKLY_REWARDS } from "@/lib/contracts/geoxRewards"
+import { GEOX_TOKEN_ADDRESS, GEOX_TOKEN_DECIMALS, BASE_CHAIN_ID, WEEKLY_REWARDS, getWeekStart, getWeekEndDate, getCurrentWeekId } from "@/lib/contracts/geoxRewards"
 
 const ERC20_ABI = [
   {
@@ -73,14 +73,10 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
     try {
       setLoading(true)
       
-      // Calculate week start (Monday) and end (Sunday) using UTC
-      const now = new Date()
-      const dayOfWeek = now.getUTCDay() // 0 = Sunday, 1 = Monday, ...
-      const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
-      const weekStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysFromMonday, 0, 0, 0, 0))
-      const weekEnd = new Date(weekStart)
-      weekEnd.setUTCDate(weekStart.getUTCDate() + 6)
-      weekEnd.setUTCHours(23, 59, 59, 999)
+      // Calculate week start (Monday) and end (Sunday) using standardized functions
+      const weekId = getCurrentWeekId()
+      const weekStart = getWeekStart()
+      const weekEnd = getWeekEndDate(weekId)
 
       // Use aggregated view - each user (FID) has ONE total score
       const { data, error } = await supabase
@@ -215,18 +211,25 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
     }
   }
 
-  async function handleDeleteScore(entryId: string) {
+  async function handleDeleteScore(entry: LeaderboardEntry) {
     try {
-      setDeleting((prev) => ({ ...prev, [entryId]: true }))
-      const { error } = await supabase.from("scores").delete().eq("id", entryId)
-      if (error) throw error
-      toast.success("Score deleted successfully")
+      setDeleting((prev) => ({ ...prev, [entry.id]: true }))
+      // Delete all scores for this user (by FID) to properly remove from aggregated leaderboard
+      if (entry.fid) {
+        const { error } = await supabase.from("scores").delete().eq("fid", entry.fid)
+        if (error) throw error
+      } else {
+        // Fallback to single entry delete if no FID
+        const { error } = await supabase.from("scores").delete().eq("id", entry.id)
+        if (error) throw error
+      }
+      toast.success("All scores for this user deleted successfully")
       loadWeeklyLeaderboard()
     } catch (error) {
       console.error("Failed to delete score:", error)
       toast.error("Failed to delete score")
     } finally {
-      setDeleting((prev) => ({ ...prev, [entryId]: false }))
+      setDeleting((prev) => ({ ...prev, [entry.id]: false }))
     }
   }
 
@@ -326,7 +329,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDeleteScore(entry.id)} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+                        <AlertDialogAction onClick={() => handleDeleteScore(entry)} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>

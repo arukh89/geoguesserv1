@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { Loader2, CheckCircle, Zap } from "lucide-react"
@@ -15,9 +15,6 @@ import {
   ensureBaseChain, 
   getPrimaryAccount 
 } from "@/lib/web3/miniappProvider"
-
-// Contract address to send 0 ETH for on-chain activity
-const GEOX_CONTRACT = process.env.NEXT_PUBLIC_GEOX_REWARDS_CONTRACT as `0x${string}` || "0xA09Ce8CF97046DDFF087b31e353d43e08f62d165"
 
 interface ClaimPointsProps {
   score: number
@@ -41,14 +38,37 @@ export function ClaimPoints({
   const { user: farcasterUser } = useFarcasterUser()
   const [claiming, setClaiming] = useState(false)
   const [claimed, setClaimed] = useState(false)
+  
+  // Ref to prevent race condition from rapid clicks
+  const submittingRef = useRef(false)
 
   async function handleClaim() {
+    // Prevent race condition from rapid clicks
+    if (submittingRef.current) return
+    
     if (!farcasterUser?.fid) {
       toast.error("Please sign in with Farcaster first")
       return
     }
 
+    // Validate gameSessionHash exists
+    if (!gameSessionHash) {
+      toast.error("Invalid game session. Please play a new game.")
+      return
+    }
+
+    // Check if already claimed in this session
+    if (typeof window !== 'undefined') {
+      const alreadyClaimed = sessionStorage.getItem(`claimed_${gameSessionHash}`)
+      if (alreadyClaimed === 'true') {
+        toast.error("This game session has already been claimed!")
+        setClaimed(true)
+        return
+      }
+    }
+
     try {
+      submittingRef.current = true
       setClaiming(true)
       toast.loading("Connecting wallet...", { id: "claim-tx" })
 
@@ -134,6 +154,14 @@ export function ClaimPoints({
 
       setClaimed(true)
       toast.success("Points claimed on-chain! Your score is now on the leaderboard!")
+      
+      // Mark this session as claimed in sessionStorage to prevent re-claim on refresh
+      if (typeof window !== 'undefined' && gameSessionHash) {
+        sessionStorage.setItem(`claimed_${gameSessionHash}`, 'true')
+        // Clear game state to prevent any further claims
+        sessionStorage.removeItem("geo_game_state")
+      }
+      
       onSuccess()
     } catch (error: any) {
       console.error("Failed to claim points:", error)
@@ -147,6 +175,7 @@ export function ClaimPoints({
       }
     } finally {
       setClaiming(false)
+      submittingRef.current = false
     }
   }
 

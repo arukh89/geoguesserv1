@@ -127,26 +127,54 @@ export interface UserNFTData {
 }
 
 /**
- * Get current week ID (weeks since epoch)
+ * Get current week start (Monday 00:00 UTC) - matches PostgreSQL date_trunc('week', ...)
  */
-export function getCurrentWeekId(): number {
-  return Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000))
+export function getWeekStart(date: Date = new Date()): Date {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
+  const dayOfWeek = d.getUTCDay() // 0 = Sunday, 1 = Monday, ...
+  const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+  d.setUTCDate(d.getUTCDate() - daysFromMonday)
+  d.setUTCHours(0, 0, 0, 0)
+  return d
 }
 
 /**
- * Get week start date (Monday 00:00 UTC)
+ * Get current week ID (ISO week number style, consistent with PostgreSQL)
+ * Week ID = number of weeks since a fixed epoch (2024-01-01 which was a Monday)
+ */
+export function getCurrentWeekId(): number {
+  const epochStart = new Date('2024-01-01T00:00:00Z') // Monday
+  const currentWeekStart = getWeekStart()
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000
+  return Math.floor((currentWeekStart.getTime() - epochStart.getTime()) / msPerWeek)
+}
+
+/**
+ * Get week start date from week ID
  */
 export function getWeekStartDate(weekId: number): Date {
-  const date = new Date(weekId * 7 * 24 * 60 * 60 * 1000)
-  return date
+  const epochStart = new Date('2024-01-01T00:00:00Z') // Monday
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000
+  return new Date(epochStart.getTime() + weekId * msPerWeek)
+}
+
+/**
+ * Get week end date (Sunday 23:59:59 UTC)
+ */
+export function getWeekEndDate(weekId: number): Date {
+  const weekStart = getWeekStartDate(weekId)
+  const weekEnd = new Date(weekStart)
+  weekEnd.setUTCDate(weekStart.getUTCDate() + 6)
+  weekEnd.setUTCHours(23, 59, 59, 999)
+  return weekEnd
 }
 
 /**
  * Get claim deadline (3 days after week ends)
  */
 export function getClaimDeadline(weekId: number): Date {
-  const weekEnd = new Date((weekId + 1) * 7 * 24 * 60 * 60 * 1000)
-  weekEnd.setDate(weekEnd.getDate() + CLAIM_DEADLINE_DAYS)
+  const weekEnd = getWeekEndDate(weekId)
+  weekEnd.setUTCDate(weekEnd.getUTCDate() + CLAIM_DEADLINE_DAYS)
   return weekEnd
 }
 

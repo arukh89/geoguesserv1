@@ -95,32 +95,30 @@ export interface UserReward {
   tx_hash?: string
 }
 
+// Re-export week functions from geoxRewards for consistency
+import { getCurrentWeekId, getWeekStart, getWeekStartDate, getWeekEndDate } from './geoxRewards'
+export { getCurrentWeekId, getWeekStart, getWeekStartDate, getWeekEndDate }
+
 /**
- * Calculate week ID from date (weeks since epoch)
+ * Calculate week ID from date - uses standardized epoch (2024-01-01)
+ * @deprecated Use getCurrentWeekId() from geoxRewards instead
  */
 export function getWeekId(date: Date = new Date()): number {
-  const epochStart = new Date('1970-01-01T00:00:00Z')
+  const epochStart = new Date('2024-01-01T00:00:00Z') // Monday - matches geoxRewards
+  const weekStart = getWeekStart(date)
   const msPerWeek = 7 * 24 * 60 * 60 * 1000
-  return Math.floor((date.getTime() - epochStart.getTime()) / msPerWeek)
+  return Math.floor((weekStart.getTime() - epochStart.getTime()) / msPerWeek)
 }
 
 /**
  * Get current week's start and end dates (Monday to Sunday UTC)
  */
 export function getCurrentWeekRange(): { start: Date; end: Date } {
-  const now = new Date()
-  const dayOfWeek = now.getUTCDay()
-  const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
-  
-  const start = new Date(now)
-  start.setUTCDate(now.getUTCDate() - daysToMonday)
-  start.setUTCHours(0, 0, 0, 0)
-  
-  const end = new Date(start)
-  end.setUTCDate(start.getUTCDate() + 6)
-  end.setUTCHours(23, 59, 59, 999)
-  
-  return { start, end }
+  const weekId = getCurrentWeekId()
+  return {
+    start: getWeekStart(),
+    end: getWeekEndDate(weekId)
+  }
 }
 
 /**
