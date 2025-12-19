@@ -52,6 +52,7 @@ export async function getMiniAppWalletClient() {
 }
 
 // Discover Base App in-app wallet provider
+// Note: @base-org/account is an optional dependency, this function returns null if not installed
 export async function getBaseAppProvider(): Promise<EIP1193Provider | null> {
   if (typeof window === "undefined") return null
   
@@ -63,23 +64,8 @@ export async function getBaseAppProvider(): Promise<EIP1193Provider | null> {
     return null
   }
   
-  try {
-    const mod: any = await import("@base-org/account")
-    const createBaseAccountSDK = mod?.createBaseAccountSDK
-    const baseConst = mod?.base
-    if (!createBaseAccountSDK) return null
-    const sdk = createBaseAccountSDK({
-      appName: "Farcaster Geo Explorer",
-      appLogoUrl: "https://geoguesserv1.vercel.app/icon.png",
-      appChainIds: baseConst?.constants?.CHAIN_IDS?.base
-        ? [baseConst.constants.CHAIN_IDS.base]
-        : [8453],
-    })
-    const provider = sdk?.getProvider?.()
-    if (provider && (provider as any).request) return provider as EIP1193Provider
-  } catch {
-    // ignore
-  }
+  // @base-org/account is optional - skip if not installed
+  // This prevents build errors when the package is not available
   return null
 }
 
