@@ -2,27 +2,30 @@
 import { base } from "wagmi/chains"
 import { injected, coinbaseWallet } from "wagmi/connectors"
 
-// Build connectors array in a predictable order
-export function createWagmiConfig(farcasterFactory?: () => any) {
+// Build connectors array - Farcaster connector FIRST for miniapp priority
+export function createWagmiConfig(farcasterConnector?: () => any) {
   const connectors: any[] = []
 
-  // Farcaster miniapp (Warpcast)
-  if (typeof window !== "undefined" && farcasterFactory) {
+  // Farcaster miniapp connector (MUST be first for auto-connect in miniapp)
+  if (farcasterConnector) {
     try {
-      connectors.push(farcasterFactory())
-    } catch {
-      // ignore
+      const connector = farcasterConnector()
+      if (connector) {
+        connectors.push(connector)
+      }
+    } catch (e) {
+      console.warn("[Wagmi] Failed to initialize Farcaster connector:", e)
     }
   }
 
-  // Coinbase Wallet (Base)
+  // Coinbase Wallet (for Base app)
   connectors.push(
     coinbaseWallet({
       appName: "Farcaster Geo Explorer",
     }),
   )
 
-  // Injected (MetaMask, etc.)
+  // Injected wallet (MetaMask, etc. for browser)
   connectors.push(injected())
 
   return createConfig({
