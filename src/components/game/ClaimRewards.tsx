@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
-import { useAccount, useWalletClient, useChainId, useSwitchChain, usePublicClient, useConnect } from "wagmi"
 import { toast } from "sonner"
+import { createPublicClient, custom } from "viem"
+import { base } from "viem/chains"
 import { 
   Loader2, 
   Gift, 
@@ -19,11 +20,16 @@ import {
 import { 
   GEOX_REWARDS_CONTRACT,
   GEOX_REWARDS_ABI,
-  BASE_CHAIN_ID,
   formatRewardAmount,
   type WeeklyReward 
 } from "@/lib/contracts/geoxRewards"
 import { fetchUserByFid } from "@/lib/neynar/client"
+import { 
+  getMiniAppProvider, 
+  getMiniAppWalletClient, 
+  ensureBaseChain, 
+  getPrimaryAccount 
+} from "@/lib/web3/miniappProvider"
 
 interface ClaimRewardsProps {
   onClose?: () => void
@@ -31,28 +37,11 @@ interface ClaimRewardsProps {
 
 export function ClaimRewards({ onClose }: ClaimRewardsProps) {
   const { user: farcasterUser, loading: userLoading } = useFarcasterUser()
-  const { isConnected, address } = useAccount()
-  const chainId = useChainId()
-  const { switchChain } = useSwitchChain()
-  const { data: walletClient } = useWalletClient()
-  const publicClient = usePublicClient()
-  const { connect, connectors, isPending: isConnecting } = useConnect()
   
   const [rewards, setRewards] = useState<WeeklyReward[]>([])
   const [loading, setLoading] = useState(true)
   const [claiming, setClaiming] = useState<Record<number, boolean>>({})
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
-
-  // Auto-connect first connector (Farcaster connector is first in miniapp context)
-  // Following Farcaster SDK pattern: connect({ connector: connectors[0] })
-  useEffect(() => {
-    if (!isConnected && connectors.length > 0 && !isConnecting) {
-      const connector = connectors[0]
-      if (connector) {
-        connect({ connector })
-      }
-    }
-  }, [isConnected, connectors, connect, isConnecting])
 
   // Fetch user's wallet address from Neynar
   useEffect(() => {
@@ -112,38 +101,11 @@ export function ClaimRewards({ onClose }: ClaimRewardsProps) {
     fetchRewards()
   }, [fetchRewards])
 
-  // Handle wallet connect button
-  function handleConnect() {
-    if (connectors.length === 0) {
-      toast.error("No wallet available")
-      return
-    }
-    const connector = connectors[0]
-    if (connector) {
-      connect({ connector })
-    }
-  }
-
-  // Handle claim with contract interaction
+  // Handle claim with contract interaction using Farcaster SDK
   async function handleClaim(reward: WeeklyReward) {
-    if (!isConnected || !walletClient || !publicClient) {
-      toast.error("Please connect your wallet first")
-      return
-    }
-
     if (!GEOX_REWARDS_CONTRACT) {
       toast.error("Rewards contract not configured yet")
       return
-    }
-    
-    if (chainId !== BASE_CHAIN_ID) {
-      try {
-        switchChain({ chainId: BASE_CHAIN_ID })
-        return
-      } catch {
-        toast.error("Please switch to Base network")
-        return
-      }
     }
     
     if (reward.claimed) {
@@ -158,10 +120,36 @@ export function ClaimRewards({ onClose }: ClaimRewardsProps) {
 
     try {
       setClaiming(prev => ({ ...prev, [reward.weekId]: true }))
+      toast.loading("Connecting wallet...", { id: 'claim' })
+
+      // Get provider using Farcaster SDK pattern
+      const provider = await getMiniAppProvider()
+      if (!provider) {
+        toast.dismiss('claim')
+        toast.error("No wallet available. Please open in Warpcast.")
+        setClaiming(prev => ({ ...prev, [reward.weekId]: false }))
+        return
+      }
+
+      // Ensure we're on Base chain
+      await ensureBaseChain(provider)
+
+      // Get wallet client
+      const walletClient = await getMiniAppWalletClient()
+      if (!walletClient) {
+        toast.dismiss('claim')
+        toast.error("Failed to connect wallet")
+        setClaiming(prev => ({ ...prev, [reward.weekId]: false }))
+        return
+      }
+
+      // Get account
+      const account = await getPrimaryAccount(provider, walletClient)
 
       // Get signature if not already have one
       let signature = reward.signature
       if (!signature) {
+        toast.loading("Getting signature...", { id: 'claim' })
         const signResponse = await fetch('/api/rewards/sign', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -184,8 +172,11 @@ export function ClaimRewards({ onClose }: ClaimRewardsProps) {
         throw new Error('No signature available')
       }
 
+      toast.loading("Claiming reward...", { id: 'claim' })
+
       // Call contract to claim
       const hash = await walletClient.writeContract({
+        account,
         address: GEOX_REWARDS_CONTRACT,
         abi: GEOX_REWARDS_ABI,
         functionName: 'claimReward',
@@ -201,8 +192,7 @@ export function ClaimRewards({ onClose }: ClaimRewardsProps) {
       })
 
       // Wait for transaction
-      toast.loading("Claiming reward...", { id: 'claim' })
-      
+      const publicClient = createPublicClient({ chain: base, transport: custom(provider) })
       await publicClient.waitForTransactionReceipt({ hash })
       
       toast.dismiss('claim')
@@ -222,8 +212,10 @@ export function ClaimRewards({ onClose }: ClaimRewardsProps) {
     } catch (error: any) {
       console.error("Failed to claim:", error)
       toast.dismiss('claim')
-      if (error?.message?.includes('rejected')) {
+      if (error?.message?.includes('rejected') || error?.message?.includes('denied')) {
         toast.error("Transaction cancelled")
+      } else if (error?.message === "no_account") {
+        toast.error("Please connect your wallet in Warpcast")
       } else {
         toast.error(error?.message || "Failed to claim reward")
       }
@@ -301,11 +293,7 @@ export function ClaimRewards({ onClose }: ClaimRewardsProps) {
                 key={reward.weekId}
                 reward={reward}
                 onClaim={() => handleClaim(reward)}
-                onConnect={handleConnect}
                 claiming={claiming[reward.weekId]}
-                isConnected={isConnected}
-                isConnecting={isConnecting}
-                chainId={chainId}
               />
             ))}
           </div>
@@ -355,25 +343,17 @@ export function ClaimRewards({ onClose }: ClaimRewardsProps) {
 interface RewardCardProps {
   reward: WeeklyReward
   onClaim?: () => void
-  onConnect?: () => void
   claiming?: boolean
   claimed?: boolean
   expired?: boolean
-  isConnected?: boolean
-  isConnecting?: boolean
-  chainId?: number
 }
 
 function RewardCard({ 
   reward, 
   onClaim, 
-  onConnect,
   claiming, 
   claimed, 
   expired,
-  isConnected,
-  isConnecting,
-  chainId 
 }: RewardCardProps) {
   const deadline = new Date(reward.deadline * 1000)
   const daysLeft = Math.max(0, Math.ceil((deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
@@ -415,26 +395,12 @@ function RewardCard({
               <AlertCircle className="w-4 h-4" />
               Expired
             </div>
-          ) : !isConnected ? (
-            <Button
-              size="sm"
-              onClick={onConnect}
-              disabled={isConnecting}
-              className="gap-1"
-            >
-              {isConnecting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Wallet className="w-4 h-4" />
-              )}
-              Connect
-            </Button>
           ) : (
             <>
               <Button
                 size="sm"
                 onClick={onClaim}
-                disabled={claiming || chainId !== BASE_CHAIN_ID || !GEOX_REWARDS_CONTRACT}
+                disabled={claiming || !GEOX_REWARDS_CONTRACT}
                 className="gap-1"
               >
                 {claiming ? (

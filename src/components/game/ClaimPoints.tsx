@@ -1,16 +1,21 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { useAccount, useConnect, useWalletClient, usePublicClient, useChainId, useSwitchChain } from "wagmi"
 import { toast } from "sonner"
-import { Loader2, Wallet, CheckCircle, Zap } from "lucide-react"
+import { Loader2, CheckCircle, Zap } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
 import { fetchUserByFid } from "@/lib/neynar/client"
-import { parseEther } from "viem"
+import { parseEther, createPublicClient, custom } from "viem"
+import { base } from "viem/chains"
+import { 
+  getMiniAppProvider, 
+  getMiniAppWalletClient, 
+  ensureBaseChain, 
+  getPrimaryAccount 
+} from "@/lib/web3/miniappProvider"
 
-const BASE_CHAIN_ID = 8453
 // Contract address to send 0 ETH for on-chain activity
 const GEOX_CONTRACT = process.env.NEXT_PUBLIC_GEOX_REWARDS_CONTRACT as `0x${string}` || "0xA09Ce8CF97046DDFF087b31e353d43e08f62d165"
 
@@ -32,36 +37,8 @@ export function ClaimPoints({
   disabled = false,
 }: ClaimPointsProps) {
   const { user: farcasterUser } = useFarcasterUser()
-  const { isConnected, address } = useAccount()
-  const { connect, connectors, isPending: isConnecting } = useConnect()
-  const { data: walletClient } = useWalletClient()
-  const publicClient = usePublicClient()
-  const chainId = useChainId()
-  const { switchChain } = useSwitchChain()
-
   const [claiming, setClaiming] = useState(false)
   const [claimed, setClaimed] = useState(false)
-
-  // Auto-connect first available connector on mount
-  useEffect(() => {
-    if (!isConnected && connectors.length > 0 && !isConnecting) {
-      const connector = connectors[0]
-      if (connector) {
-        connect({ connector })
-      }
-    }
-  }, [isConnected, connectors, connect, isConnecting])
-
-  async function handleConnect() {
-    if (connectors.length === 0) {
-      toast.error("No wallet available")
-      return
-    }
-    const connector = connectors[0]
-    if (connector) {
-      connect({ connector })
-    }
-  }
 
   async function handleClaim() {
     if (!farcasterUser?.fid) {
@@ -69,44 +46,53 @@ export function ClaimPoints({
       return
     }
 
-    if (!isConnected || !address || !walletClient) {
-      toast.error("Please connect your wallet first")
-      return
-    }
-
-    // Check chain
-    if (chainId !== BASE_CHAIN_ID) {
-      try {
-        switchChain({ chainId: BASE_CHAIN_ID })
-        toast.info("Please switch to Base network and try again")
-        return
-      } catch {
-        toast.error("Please switch to Base network")
-        return
-      }
-    }
-
     try {
       setClaiming(true)
+      toast.loading("Connecting wallet...", { id: "claim-tx" })
 
-      // Send 0 ETH transaction to contract (on-chain activity with gas fee)
+      // Get provider using Farcaster SDK pattern
+      const provider = await getMiniAppProvider()
+      if (!provider) {
+        toast.dismiss("claim-tx")
+        toast.error("No wallet available. Please open in Warpcast.")
+        setClaiming(false)
+        return
+      }
+
+      // Ensure we're on Base chain
+      await ensureBaseChain(provider)
+
+      // Get wallet client
+      const walletClient = await getMiniAppWalletClient()
+      if (!walletClient) {
+        toast.dismiss("claim-tx")
+        toast.error("Failed to connect wallet")
+        setClaiming(false)
+        return
+      }
+
+      // Get account
+      const account = await getPrimaryAccount(provider, walletClient)
+
       toast.loading("Confirming on Base...", { id: "claim-tx" })
-      
+
+      // Send 0 ETH transaction (on-chain activity with gas fee)
+      // Send to user's own address to avoid contract rejection
       const hash = await walletClient.sendTransaction({
-        to: GEOX_CONTRACT,
+        account,
+        to: account, // Send to self
         value: parseEther("0"),
-        data: `0x${Buffer.from(`claim:${farcasterUser.fid}:${score}:${Date.now()}`).toString("hex")}` as `0x${string}`,
+        data: `0x${Buffer.from(`geoexplorer:claim:${farcasterUser.fid}:${score}:${Date.now()}`).toString("hex")}` as `0x${string}`,
       })
 
       // Wait for transaction
-      if (publicClient) {
-        await publicClient.waitForTransactionReceipt({ hash })
-      }
+      const publicClient = createPublicClient({ chain: base, transport: custom(provider) })
+      await publicClient.waitForTransactionReceipt({ hash })
       
       toast.dismiss("claim-tx")
 
       // Get user's verified wallet from Neynar
-      let walletAddress = address
+      let walletAddress = account
       try {
         const neynarUser = await fetchUserByFid(farcasterUser.fid)
         if (neynarUser?.primaryEthAddress) {
@@ -146,6 +132,8 @@ export function ClaimPoints({
       toast.dismiss("claim-tx")
       if (error?.message?.includes("rejected") || error?.message?.includes("denied")) {
         toast.error("Transaction rejected")
+      } else if (error?.message === "no_account") {
+        toast.error("Please connect your wallet in Warpcast")
       } else {
         toast.error(error?.message || "Failed to claim points")
       }
@@ -166,8 +154,8 @@ export function ClaimPoints({
   return (
     <div className="space-y-3">
       <Button
-        onClick={!isConnected ? handleConnect : handleClaim}
-        disabled={disabled || claiming || !farcasterUser || isConnecting}
+        onClick={handleClaim}
+        disabled={disabled || claiming || !farcasterUser}
         size="lg"
         className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 gap-2"
       >
@@ -175,21 +163,6 @@ export function ClaimPoints({
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
             Confirming on Base...
-          </>
-        ) : isConnecting ? (
-          <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            Connecting...
-          </>
-        ) : !isConnected ? (
-          <>
-            <Wallet className="w-5 h-5" />
-            Connect Wallet to Claim
-          </>
-        ) : chainId !== BASE_CHAIN_ID ? (
-          <>
-            <Zap className="w-5 h-5" />
-            Switch to Base & Claim
           </>
         ) : (
           <>
