@@ -89,7 +89,7 @@ Expected result:
 
 1. **Live Leaderboard** - Real-time updates dengan Supabase Realtime
 2. **Weekly Competition** - Perhitungan ranking mingguan otomatis
-3. **Token Rewards** - Tracking pembayaran MOONSHOT token
+3. **Token Rewards** - Tracking pembayaran GEOX token
 4. **Optimized Queries** - Index untuk performa leaderboard
 
 ## 📝 Langkah Setup Project Baru
