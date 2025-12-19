@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -6,8 +6,8 @@ import { Trophy, MapPin, Target, Share2, RotateCcw, TrendingUp, CheckCircle, Ale
 import type { RoundResult } from "@/lib/game/types"
 import { formatDistance, calculateAverageDistance } from "@/lib/game/scoring"
 import Leaderboard from "./Leaderboard"
-import { useState } from "react"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
+import { createClient } from "@/lib/supabase/client"
 import ClaimPoints from "./ClaimPoints"
 
 interface FinalResultsProps {
@@ -71,13 +71,53 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
 
   const performance = getPerformanceLevel(accuracyPercentage)
 
-  // Track if points have been claimed - check sessionStorage on init
-  const [pointsClaimed, setPointsClaimed] = useState(() => {
-    if (typeof window !== 'undefined' && gameSessionHash) {
-      return sessionStorage.getItem(`claimed_${gameSessionHash}`) === 'true'
+  // Track if points have been claimed
+  const [pointsClaimed, setPointsClaimed] = useState(false)
+  const [checkingClaim, setCheckingClaim] = useState(true)
+
+  // Check if this game has already been claimed on mount
+  useEffect(() => {
+    async function checkIfClaimed() {
+      if (!gameSessionHash) {
+        setCheckingClaim(false)
+        return
+      }
+
+      // First check sessionStorage (fast)
+      if (typeof window !== 'undefined') {
+        const localClaimed = sessionStorage.getItem(`claimed_${gameSessionHash}`)
+        if (localClaimed === 'true') {
+          setPointsClaimed(true)
+          setCheckingClaim(false)
+          return
+        }
+      }
+
+      // Then check database (authoritative)
+      try {
+        const supabase = createClient()
+        const { data } = await supabase
+          .from('scores')
+          .select('id')
+          .eq('game_session_hash', gameSessionHash)
+          .maybeSingle()
+        
+        if (data) {
+          setPointsClaimed(true)
+          // Sync to sessionStorage
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem(`claimed_${gameSessionHash}`, 'true')
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to check claim status:", e)
+      } finally {
+        setCheckingClaim(false)
+      }
     }
-    return false
-  })
+
+    checkIfClaimed()
+  }, [gameSessionHash])
 
   return (
     <div className="min-h-screen p-4 pt-16 md:pt-8 relative z-10">
@@ -118,7 +158,7 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
             </motion.div>
 
             {/* Claim Points Section - Only for eligible mode */}
-            {isLeaderboardEligible && !pointsClaimed && (
+            {isLeaderboardEligible && !checkingClaim && !pointsClaimed && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

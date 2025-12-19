@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { Loader2, CheckCircle, Zap } from "lucide-react"
@@ -38,9 +38,54 @@ export function ClaimPoints({
   const { user: farcasterUser } = useFarcasterUser()
   const [claiming, setClaiming] = useState(false)
   const [claimed, setClaimed] = useState(false)
+  const [checking, setChecking] = useState(true)
   
   // Ref to prevent race condition from rapid clicks
   const submittingRef = useRef(false)
+
+  // Check if this game has already been claimed on mount
+  useEffect(() => {
+    async function checkIfClaimed() {
+      if (!gameSessionHash) {
+        setChecking(false)
+        return
+      }
+
+      // First check sessionStorage (fast)
+      if (typeof window !== 'undefined') {
+        const localClaimed = sessionStorage.getItem(`claimed_${gameSessionHash}`)
+        if (localClaimed === 'true') {
+          setClaimed(true)
+          setChecking(false)
+          return
+        }
+      }
+
+      // Then check database (authoritative)
+      try {
+        const supabase = createClient()
+        const { data } = await supabase
+          .from('scores')
+          .select('id')
+          .eq('game_session_hash', gameSessionHash)
+          .maybeSingle()
+        
+        if (data) {
+          setClaimed(true)
+          // Sync to sessionStorage
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem(`claimed_${gameSessionHash}`, 'true')
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to check claim status:", e)
+      } finally {
+        setChecking(false)
+      }
+    }
+
+    checkIfClaimed()
+  }, [gameSessionHash])
 
   async function handleClaim() {
     // Prevent race condition from rapid clicks
@@ -179,11 +224,38 @@ export function ClaimPoints({
     }
   }
 
+  // Show loading while checking claim status
+  if (checking) {
+    return (
+      <div className="flex items-center justify-center gap-2 text-green-400/60 py-4">
+        <Loader2 className="w-5 h-5 animate-spin" />
+        <span className="text-sm">Checking claim status...</span>
+      </div>
+    )
+  }
+
+  // Already claimed - show 0 points
   if (claimed) {
     return (
-      <div className="flex items-center gap-2 text-green-400">
-        <CheckCircle className="w-5 h-5" />
-        <span className="font-medium">Points claimed!</span>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-green-400">
+          <CheckCircle className="w-5 h-5" />
+          <span className="font-medium">Points claimed!</span>
+        </div>
+        <p className="text-xs text-green-400/60">
+          This game&apos;s {score.toLocaleString()} points have been added to your leaderboard score.
+        </p>
+      </div>
+    )
+  }
+
+  // No valid game session
+  if (!gameSessionHash) {
+    return (
+      <div className="text-center py-4">
+        <p className="text-sm text-yellow-400/80">
+          Invalid game session. Please play a new game to claim points.
+        </p>
       </div>
     )
   }
@@ -192,7 +264,7 @@ export function ClaimPoints({
     <div className="space-y-3">
       <Button
         onClick={handleClaim}
-        disabled={disabled || claiming || !farcasterUser}
+        disabled={disabled || claiming || !farcasterUser || claimed}
         size="lg"
         className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 gap-2"
       >
