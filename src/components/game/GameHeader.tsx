@@ -26,7 +26,7 @@ export default function GameHeader({ currentRound, totalRounds, score, timeLeftS
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-6">
             {onBack && (
-              <Button onClick={onBack} variant="ghost" size="sm" className="gap-2">
+              <Button onClick={onBack} variant="secondary" size="sm" className="gap-2 bg-transparent border-transparent hover:bg-green-500/10">
                 <ArrowLeft className="w-4 h-4" />
                 Menu
               </Button>

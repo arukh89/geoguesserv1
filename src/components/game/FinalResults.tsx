@@ -2,14 +2,13 @@ import React from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trophy, MapPin, Target, Share2, RotateCcw, TrendingUp, CheckCircle, AlertCircle, Home } from "lucide-react"
+import { Trophy, MapPin, Target, Share2, RotateCcw, TrendingUp, CheckCircle, AlertCircle, Home, Zap } from "lucide-react"
 import type { RoundResult } from "@/lib/game/types"
 import { formatDistance, calculateAverageDistance } from "@/lib/game/scoring"
 import Leaderboard from "./Leaderboard"
-import { useEffect, useRef, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { useState } from "react"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
-import { formatUsernameForDisplay, formatUsernameForCompactDisplay, isFarcasterUser, type FarcasterUser } from "@/lib/utils/formatUsernameFarcaster"
+import ClaimPoints from "./ClaimPoints"
 
 interface FinalResultsProps {
   results: RoundResult[]
@@ -71,77 +70,8 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
 
   const performance = getPerformanceLevel(accuracyPercentage)
 
-  const submittedRef = useRef(false)
-  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
-  const [submissionMessage, setSubmissionMessage] = useState<string>('')
-
-  useEffect(() => {
-    // Only submit scores for Time Attack 30s mode
-    if (!isLeaderboardEligible) {
-      setSubmissionStatus('idle')
-      return
-    }
-
-    // Wait for user loading to complete before submitting
-    if (userLoading) {
-      setSubmissionStatus('submitting')
-      setSubmissionMessage('Loading user data...')
-      return
-    }
-    
-    if (submittedRef.current) {
-      return
-    }
-    submittedRef.current = true
-
-    const submit = async () => {
-      try {
-        setSubmissionStatus('submitting')
-        setSubmissionMessage('Submitting your score to leaderboard...')
-        
-        const supabase = createClient()
-
-        // Use database function to insert score with validation
-        // Store username and FID separately for proper display
-        const playerName = farcasterUser?.username 
-          ? `@${farcasterUser.username}` 
-          : farcasterUser?.displayName || "Anonymous";
-        const playerFid = farcasterUser?.fid || null;
-        
-        // Get wallet address from Farcaster user if available
-        const walletAddress = farcasterUser?.verifiedAddresses?.[0] || farcasterUser?.custodyAddress || null;
-        
-        console.log("[FinalResults] Submitting score with:", { playerName, playerFid, walletAddress, farcasterUser })
-        
-        const { data, error } = await supabase.rpc("insert_score", {
-          p_player_name: playerName,
-          p_identity: walletAddress, // Store wallet address for token rewards
-          p_score_value: totalScore,
-          p_rounds: results.length,
-          p_average_distance: Math.round(averageDistance),
-          p_fid: playerFid,
-          p_pfp_url: farcasterUser?.pfpUrl || null,
-        })
-
-        if (error) {
-          console.error("Failed to submit score to Supabase:", error)
-          setSubmissionStatus('error')
-          setSubmissionMessage(`Failed to submit score: ${error.message}`)
-        } else {
-          console.log("Score submitted successfully:", data)
-          setSubmissionStatus('success')
-          setSubmissionMessage('Score submitted to leaderboard!')
-        }
-      } catch (err) {
-        console.error("Failed to submit score to Supabase:", err)
-        setSubmissionStatus('error')
-        setSubmissionMessage(`Failed to submit score: ${err instanceof Error ? err.message : 'Unknown error'}`)
-      }
-    }
-    
-    submit()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userLoading, isLeaderboardEligible])
+  // Track if points have been claimed
+  const [pointsClaimed, setPointsClaimed] = useState(false)
 
   return (
     <div className="min-h-screen p-4 pt-16 md:pt-8 relative z-10">
@@ -181,6 +111,46 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
               </div>
             </motion.div>
 
+            {/* Claim Points Section - Only for eligible mode */}
+            {isLeaderboardEligible && !pointsClaimed && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="p-4 rounded-lg border-2 border-green-500/50 bg-green-500/10"
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <Zap className="w-5 h-5 text-green-400" />
+                  <span className="font-semibold text-green-400">Claim Your Points!</span>
+                </div>
+                <p className="text-sm text-green-300/80 mb-4">
+                  Submit your score to the leaderboard. Top 10 weekly players win GEOX tokens every Sunday!
+                </p>
+                <ClaimPoints
+                  score={totalScore}
+                  rounds={results.length}
+                  averageDistance={averageDistance}
+                  onSuccess={() => setPointsClaimed(true)}
+                />
+              </motion.div>
+            )}
+
+            {/* Points Claimed Success */}
+            {isLeaderboardEligible && pointsClaimed && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="p-4 rounded-lg border-2 border-green-500/50 bg-green-500/10 flex items-center gap-3"
+              >
+                <CheckCircle className="w-5 h-5 text-green-400" />
+                <div className="text-sm font-medium text-green-300">
+                  Points claimed! Your score is now on the leaderboard. Good luck!
+                </div>
+              </motion.div>
+            )}
+
+            {/* Not eligible warning */}
             {!isLeaderboardEligible && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -191,32 +161,6 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
                 <AlertCircle className="w-5 h-5 text-yellow-400" />
                 <div className="text-sm font-medium text-yellow-300">
                   This score is not eligible for leaderboard. Play Time Attack 30s mode to compete for GEO token rewards!
-                </div>
-              </motion.div>
-            )}
-
-            {isLeaderboardEligible && submissionStatus !== 'idle' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className={`p-4 rounded-lg border-2 flex items-center gap-3 ${
-                  submissionStatus === 'success'
-                    ? 'border-green-500/50 bg-green-500/10'
-                    : submissionStatus === 'error'
-                    ? 'border-red-500/50 bg-red-500/10'
-                    : 'border-blue-500/50 bg-blue-500/10'
-                }`}
-              >
-                {submissionStatus === 'success' ? (
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                ) : submissionStatus === 'error' ? (
-                  <AlertCircle className="w-5 h-5 text-red-400" />
-                ) : (
-                  <div className="w-5 h-5 border-2 border-blue-400/30 border-t-transparent rounded-full animate-spin" />
-                )}
-                <div className="text-sm font-medium">
-                  {submissionMessage}
                 </div>
               </motion.div>
             )}
@@ -326,8 +270,8 @@ export default function FinalResults({ results, totalScore, onPlayAgain, onShare
               <Button
                 onClick={onPlayAgain}
                 size="lg"
-                variant="ghost"
-                className="sm:flex-none h-14 px-6 text-lg font-semibold text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                variant="secondary"
+                className="sm:flex-none h-14 px-6 text-lg font-semibold text-green-400 hover:text-green-300 bg-transparent border-transparent hover:bg-green-500/10"
               >
                 <Home className="w-5 h-5 mr-2" />
                 Home

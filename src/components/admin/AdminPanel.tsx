@@ -23,8 +23,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { fetchUserByFid } from "@/lib/neynar/client"
 
-// GEO EXPLORER token on Base Mainnet
-const GEO_EXPLORER_CONTRACT = "0x9d7ff2e9ba89502776248acd6cbcb6734049fb07"
+// GEO EXPLORER token on Base Mainnet (deployed via mint.club)
+const GEO_EXPLORER_CONTRACT = process.env.NEXT_PUBLIC_GEO_TOKEN_ADDRESS || "0x19E426b33E21e4C3Bd555de40599C4f68d48630b"
 const GEO_EXPLORER_DECIMALS = 18
 const BASE_CHAIN_ID = 8453
 
@@ -327,7 +327,7 @@ export function AdminPanel({ adminFid, adminWallet }: AdminPanelProps) {
                   </div>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" disabled={deleting[entry.id]} className="text-red-400 hover:text-red-300 hover:bg-red-900/20">
+                      <Button variant="secondary" size="sm" disabled={deleting[entry.id]} className="text-red-400 hover:text-red-300 bg-transparent border-transparent hover:bg-red-900/20">
                         {deleting[entry.id] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                       </Button>
                     </AlertDialogTrigger>
