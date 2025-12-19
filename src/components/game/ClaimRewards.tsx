@@ -24,7 +24,6 @@ import {
   type WeeklyReward 
 } from "@/lib/contracts/geoxRewards"
 import { fetchUserByFid } from "@/lib/neynar/client"
-import { detectWalletEnvironment, getPreferredConnectorName } from "@/lib/web3/environment"
 
 interface ClaimRewardsProps {
   onClose?: () => void
@@ -37,37 +36,23 @@ export function ClaimRewards({ onClose }: ClaimRewardsProps) {
   const { switchChain } = useSwitchChain()
   const { data: walletClient } = useWalletClient()
   const publicClient = usePublicClient()
-  const { connect, connectors } = useConnect()
-  
-  const [walletEnv, setWalletEnv] = useState<string>('browser')
+  const { connect, connectors, isPending: isConnecting } = useConnect()
   
   const [rewards, setRewards] = useState<WeeklyReward[]>([])
   const [loading, setLoading] = useState(true)
   const [claiming, setClaiming] = useState<Record<number, boolean>>({})
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
 
-  // Detect wallet environment on mount
+  // Auto-connect first connector (Farcaster connector is first in miniapp context)
+  // Following Farcaster SDK pattern: connect({ connector: connectors[0] })
   useEffect(() => {
-    const env = detectWalletEnvironment()
-    setWalletEnv(env)
-  }, [])
-
-  // Auto-connect appropriate wallet based on environment
-  useEffect(() => {
-    if (isConnected || connectors.length === 0) return
-    
-    const env = detectWalletEnvironment()
-    const preferredName = getPreferredConnectorName(env)
-    
-    // Find matching connector
-    const connector = connectors.find(c => 
-      c.name.toLowerCase().includes(preferredName.toLowerCase())
-    ) || connectors[0]
-    
-    if (connector) {
-      connect({ connector })
+    if (!isConnected && connectors.length > 0 && !isConnecting) {
+      const connector = connectors[0]
+      if (connector) {
+        connect({ connector })
+      }
     }
-  }, [isConnected, connectors, connect])
+  }, [isConnected, connectors, connect, isConnecting])
 
   // Fetch user's wallet address from Neynar
   useEffect(() => {
@@ -126,6 +111,18 @@ export function ClaimRewards({ onClose }: ClaimRewardsProps) {
   useEffect(() => {
     fetchRewards()
   }, [fetchRewards])
+
+  // Handle wallet connect button
+  function handleConnect() {
+    if (connectors.length === 0) {
+      toast.error("No wallet available")
+      return
+    }
+    const connector = connectors[0]
+    if (connector) {
+      connect({ connector })
+    }
+  }
 
   // Handle claim with contract interaction
   async function handleClaim(reward: WeeklyReward) {
@@ -304,8 +301,10 @@ export function ClaimRewards({ onClose }: ClaimRewardsProps) {
                 key={reward.weekId}
                 reward={reward}
                 onClaim={() => handleClaim(reward)}
+                onConnect={handleConnect}
                 claiming={claiming[reward.weekId]}
                 isConnected={isConnected}
+                isConnecting={isConnecting}
                 chainId={chainId}
               />
             ))}
@@ -356,20 +355,24 @@ export function ClaimRewards({ onClose }: ClaimRewardsProps) {
 interface RewardCardProps {
   reward: WeeklyReward
   onClaim?: () => void
+  onConnect?: () => void
   claiming?: boolean
   claimed?: boolean
   expired?: boolean
   isConnected?: boolean
+  isConnecting?: boolean
   chainId?: number
 }
 
 function RewardCard({ 
   reward, 
   onClaim, 
+  onConnect,
   claiming, 
   claimed, 
   expired,
   isConnected,
+  isConnecting,
   chainId 
 }: RewardCardProps) {
   const deadline = new Date(reward.deadline * 1000)
@@ -412,12 +415,26 @@ function RewardCard({
               <AlertCircle className="w-4 h-4" />
               Expired
             </div>
+          ) : !isConnected ? (
+            <Button
+              size="sm"
+              onClick={onConnect}
+              disabled={isConnecting}
+              className="gap-1"
+            >
+              {isConnecting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Wallet className="w-4 h-4" />
+              )}
+              Connect
+            </Button>
           ) : (
             <>
               <Button
                 size="sm"
                 onClick={onClaim}
-                disabled={claiming || !isConnected || chainId !== BASE_CHAIN_ID || !GEOX_REWARDS_CONTRACT}
+                disabled={claiming || chainId !== BASE_CHAIN_ID || !GEOX_REWARDS_CONTRACT}
                 className="gap-1"
               >
                 {claiming ? (
