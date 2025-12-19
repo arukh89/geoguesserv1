@@ -1,14 +1,15 @@
 "use client"
 
 import React from "react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Globe, MapPin, Trophy, Target, Gift } from "lucide-react"
+import { Globe, MapPin, Trophy, Target, Gift, Lock, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import GameModeDropdown from "./GameModeDropdown"
 import ClaimRewards from "./ClaimRewards"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
+import { WEEKLY_REWARDS } from "@/lib/contracts/geoxRewards"
 
 interface HomeScreenProps {
   onStart: (mode: "classic" | "no-move" | "time-attack", durationSec?: number) => void
@@ -17,7 +18,35 @@ interface HomeScreenProps {
 export default function HomeScreen({ onStart }: HomeScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [showRewards, setShowRewards] = useState(false)
+  const [pendingReward, setPendingReward] = useState<{ rank: number; amount: number } | null>(null)
+  const [loadingRank, setLoadingRank] = useState(false)
   const { user: farcasterUser } = useFarcasterUser()
+
+  // Fetch user's current rank from weekly leaderboard
+  const fetchCurrentRank = useCallback(async () => {
+    if (!farcasterUser?.fid) return
+    
+    try {
+      setLoadingRank(true)
+      const response = await fetch(`/api/rewards?fid=${farcasterUser.fid}&current=true`)
+      const data = await response.json()
+      
+      if (data.currentRank && data.currentRank <= 10) {
+        const amount = WEEKLY_REWARDS[data.currentRank] || 0
+        setPendingReward({ rank: data.currentRank, amount })
+      } else {
+        setPendingReward(null)
+      }
+    } catch (error) {
+      console.error("Failed to fetch rank:", error)
+    } finally {
+      setLoadingRank(false)
+    }
+  }, [farcasterUser?.fid])
+
+  useEffect(() => {
+    fetchCurrentRank()
+  }, [fetchCurrentRank])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -249,6 +278,43 @@ export default function HomeScreen({ onStart }: HomeScreenProps) {
             transition={{ delay: 1.9 }}
             className="mt-6"
           >
+            {/* Pending Reward Preview - Always visible */}
+            {loadingRank ? (
+              <Card className="shadow-xl bg-black/80 border-2 border-yellow-500/30 backdrop-blur-sm mb-4">
+                <CardContent className="p-4 flex items-center justify-center">
+                  <Loader2 className="w-5 h-5 animate-spin text-yellow-400" />
+                </CardContent>
+              </Card>
+            ) : pendingReward ? (
+              <Card className="shadow-xl bg-black/80 border-2 border-yellow-500/30 backdrop-blur-sm mb-4">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-yellow-500/20 border border-yellow-500/40">
+                        <Lock className="w-5 h-5 text-yellow-400" />
+                      </div>
+                      <div>
+                        <div className="text-sm text-yellow-400/80">Current Rank #{pendingReward.rank}</div>
+                        <div className="text-2xl font-bold text-yellow-400">
+                          {pendingReward.amount.toLocaleString()} GEOX
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-yellow-400/60 max-w-[140px]">
+                        Terkunci hingga akhir minggu
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3 p-2 rounded bg-yellow-500/10 border border-yellow-500/20">
+                    <p className="text-xs text-yellow-400/80 text-center">
+                      ⚠️ Ranking bisa berubah. Claim tersedia setiap Minggu untuk top 10.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
+
             {showRewards ? (
               <div className="space-y-3">
                 <div className="flex justify-end">
