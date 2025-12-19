@@ -1,13 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { useAccount, useWalletClient, useChainId, useSwitchChain } from "wagmi"
+import { useAccount, useWalletClient, useChainId, useSwitchChain, useConnect } from "wagmi"
 import { toast } from "sonner"
 import { Loader2, Wallet, CheckCircle, Zap } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
 import { fetchUserByFid } from "@/lib/neynar/client"
+import { detectWalletEnvironment, getPreferredConnectorName } from "@/lib/web3/environment"
 
 const BASE_CHAIN_ID = 8453
 
@@ -33,9 +34,27 @@ export function ClaimPoints({
   const chainId = useChainId()
   const { switchChain } = useSwitchChain()
   const { data: walletClient } = useWalletClient()
+  const { connect, connectors } = useConnect()
 
   const [claiming, setClaiming] = useState(false)
   const [claimed, setClaimed] = useState(false)
+
+  // Auto-connect appropriate wallet based on environment
+  useEffect(() => {
+    if (isConnected || connectors.length === 0) return
+    
+    const env = detectWalletEnvironment()
+    const preferredName = getPreferredConnectorName(env)
+    
+    // Find matching connector
+    const connector = connectors.find(c => 
+      c.name.toLowerCase().includes(preferredName.toLowerCase())
+    ) || connectors[0]
+    
+    if (connector) {
+      connect({ connector })
+    }
+  }, [isConnected, connectors, connect])
 
   async function handleClaim() {
     if (!farcasterUser?.fid) {
