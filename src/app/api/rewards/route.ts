@@ -1,6 +1,7 @@
 /**
  * Rewards API - Get user's claimable rewards
  * GET /api/rewards?fid=123
+ * GET /api/rewards?fid=123&current=true (get current week rank)
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -13,12 +14,27 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const fid = searchParams.get('fid')
+    const current = searchParams.get('current')
     
     if (!fid) {
       return NextResponse.json({ error: 'FID is required' }, { status: 400 })
     }
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    
+    // If requesting current rank
+    if (current === 'true') {
+      const { data: leaderboard } = await supabase
+        .from('leaderboard_weekly')
+        .select('rank, p_score_value')
+        .eq('p_fid', parseInt(fid))
+        .single()
+      
+      return NextResponse.json({
+        currentRank: leaderboard?.rank || null,
+        currentScore: leaderboard?.p_score_value || 0,
+      })
+    }
     
     // Get user's rewards
     const { data, error } = await supabase
