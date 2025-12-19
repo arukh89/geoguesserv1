@@ -47,6 +47,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not in top 10' }, { status: 400 })
     }
 
+    // Check if current week has ended (claim only available after Sunday)
+    const currentWeekId = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000))
+    if (weekId >= currentWeekId) {
+      // Calculate when claim will be available
+      const weekEndDate = new Date((weekId + 1) * 7 * 24 * 60 * 60 * 1000)
+      return NextResponse.json({ 
+        error: 'Claim not available yet. Week must end first.',
+        availableAt: weekEndDate.toISOString(),
+        currentWeekId,
+        requestedWeekId: weekId
+      }, { status: 400 })
+    }
+
     // Check if already has signature for this week
     const { data: existingReward } = await supabase
       .from('user_rewards')
