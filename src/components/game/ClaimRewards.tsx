@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useFarcasterUser } from "@/hooks/useFarcasterUser"
-import { useAccount, useWalletClient, useChainId, useSwitchChain, usePublicClient } from "wagmi"
+import { useAccount, useWalletClient, useChainId, useSwitchChain, usePublicClient, useConnect } from "wagmi"
 import { toast } from "sonner"
 import { 
   Loader2, 
@@ -14,7 +14,6 @@ import {
   CheckCircle, 
   AlertCircle,
   Wallet,
-  ExternalLink,
   Sparkles
 } from "lucide-react"
 import { 
@@ -22,11 +21,10 @@ import {
   GEOX_REWARDS_ABI,
   BASE_CHAIN_ID,
   formatRewardAmount,
-  isClaimValid,
-  getCurrentWeekId,
   type WeeklyReward 
 } from "@/lib/contracts/geoxRewards"
 import { fetchUserByFid } from "@/lib/neynar/client"
+import { detectWalletEnvironment, getPreferredConnectorName } from "@/lib/web3/environment"
 
 interface ClaimRewardsProps {
   onClose?: () => void
@@ -39,11 +37,37 @@ export function ClaimRewards({ onClose }: ClaimRewardsProps) {
   const { switchChain } = useSwitchChain()
   const { data: walletClient } = useWalletClient()
   const publicClient = usePublicClient()
+  const { connect, connectors } = useConnect()
+  
+  const [walletEnv, setWalletEnv] = useState<string>('browser')
   
   const [rewards, setRewards] = useState<WeeklyReward[]>([])
   const [loading, setLoading] = useState(true)
   const [claiming, setClaiming] = useState<Record<number, boolean>>({})
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
+
+  // Detect wallet environment on mount
+  useEffect(() => {
+    const env = detectWalletEnvironment()
+    setWalletEnv(env)
+  }, [])
+
+  // Auto-connect appropriate wallet based on environment
+  useEffect(() => {
+    if (isConnected || connectors.length === 0) return
+    
+    const env = detectWalletEnvironment()
+    const preferredName = getPreferredConnectorName(env)
+    
+    // Find matching connector
+    const connector = connectors.find(c => 
+      c.name.toLowerCase().includes(preferredName.toLowerCase())
+    ) || connectors[0]
+    
+    if (connector) {
+      connect({ connector })
+    }
+  }, [isConnected, connectors, connect])
 
   // Fetch user's wallet address from Neynar
   useEffect(() => {
